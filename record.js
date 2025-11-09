@@ -9,7 +9,7 @@ async function preload(){
   speakerSel.innerHTML=(sp.data||[]).map(s=>`<option value="${s.id}">${s.code} — ${s.name||''}</option>`).join('');
   const tx=await supabase.from('texts').select('id,code,content').order('code');
   textSel.innerHTML=(tx.data||[]).map(t=>`<option value="${t.id}" data-content="${encodeURIComponent(t.content)}">${t.code}</option>`).join('');
-  if(tx.data&&tx.data[0]) document.getElementById('currentText').textContent=decodeURIComponent(textSel.options[0].dataset.content);
+  if(tx.data&&tx.data[0]) currentText.textContent=decodeURIComponent(textSel.options[0].dataset.content);
   const d=new Date().toISOString().slice(0,10); sessionId.value=`S-${d}-A`;
 }
 textSel.addEventListener('change',()=>{ const opt=textSel.options[textSel.selectedIndex]; currentText.textContent=decodeURIComponent(opt.dataset.content||'');});
