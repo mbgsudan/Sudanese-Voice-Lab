@@ -1,43 +1,185 @@
-<!doctype html><html lang="ar" dir="rtl"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>تسجيل صوت جديد | صوتنا</title>
-<link rel="icon" href="./logo-full.png"><link rel="stylesheet" href="./styles.css">
-</head><body>
-<main class="container">
-  <div class="header">
-    <h1 class="title">تسجيل صوت جديد 🎙️</h1>
-    <p class="subtitle">اقرأ النص بوضوح وبطبيعتك السودانية 👌</p>
-  </div>
-  <section class="card">
-    <div class="row" style="gap:12px">
-      <div style="flex:1">
-        <label class="label">المتحدث</label>
-        <input id="speakerName" class="input" placeholder="اكتب اسمك كما سجلته سابقًا">
-      </div>
-      <div style="width:220px">
-        <label class="label">نوع الميكروفون</label>
-        <select id="micType">
-          <option value="هاتف / لابتوب">هاتف / لابتوب</option>
-          <option value="USB">USB</option>
-          <option value="استوديو">استوديو</option>
-        </select>
-      </div>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎙️ تسجيل الصوت | صوتنا</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --glass-bg: rgba(15, 20, 25, 0.55);
+      --glass-stroke: rgba(255,255,255,0.08);
+      --primary:#00e0b6; --primary-2:#00b4d8; --danger:#ff4d4d; --muted:#b7c3c8;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:"Cairo",system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      color:#fff; min-height:100vh; background:#000;
+      background-image: url("./0dfc3b34-2283-4e1b-aa3a-ebd3e53b5d63.png");
+      background-size:cover; background-position:center; background-attachment:fixed;
+    }
+    .overlay{position:fixed;inset:0;background:radial-gradient(80% 60% at 50% 0%,rgba(0,0,0,.25),rgba(0,0,0,.75));}
+    header{
+      position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.15));
+      border-bottom:1px solid var(--glass-stroke);
+    }
+    .head-wrap{max-width:1100px;margin:auto;display:flex;align-items:center;gap:12px;padding:12px 16px}
+    .logo{height:38px;width:auto;filter:drop-shadow(0 0 10px rgba(0,224,182,.2))}
+    .title{font-weight:700;letter-spacing:.3px}
+    main{position:relative; z-index:1;}
+    .container{max-width:1100px;margin:24px auto; padding:16px; display:grid; gap:18px;}
+    .glass{
+      background:var(--glass-bg); border:1px solid var(--glass-stroke);
+      border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,.35);
+    }
+    .rec-card{display:grid; grid-template-columns:1fr; gap:16px; padding:18px;}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .label{color:var(--muted);font-size:.95rem}
+    select,input[type=text]{background:#0b0f12;border:1px solid #172026;border-radius:12px;color:#fff;padding:10px 12px;min-width:200px}
+    .text-box{
+      background:#0b0f12;border:1px solid #202a30;border-radius:16px;padding:14px; line-height:1.9;
+      min-height:88px
+    }
+    .progress{display:flex;align-items:center;gap:8px;color:#9fb0b6}
+    .bar{height:6px;background:#1a2328;border-radius:999px;overflow:hidden;flex:1}
+    .bar > span{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-2));width:0%}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{
+      border:0; border-radius:12px; padding:12px 16px; cursor:pointer; font-weight:700;
+      transition:transform .12s ease, opacity .12s ease, box-shadow .12s ease;
+    }
+    .btn:active{transform:translateY(1px)}
+    .ghost{background:#12171a;border:1px solid #1e2a30;color:#cfe7ea}
+    .ghost:hover{opacity:.9}
+    .primary{
+      background:linear-gradient(90deg,var(--primary),var(--primary-2)); color:#001419;
+      box-shadow:0 0 0 0 rgba(0,224,182,.6);
+      animation:breath 2.4s ease-in-out infinite;
+    }
+    @keyframes breath {0%{box-shadow:0 0 0 0 rgba(0,224,182,.35)}70%{box-shadow:0 0 0 18px rgba(0,224,182,0)}100%{box-shadow:0 0 0 0 rgba(0,224,182,0)}}
+    .meter{height:10px;border-radius:999px;background:#1b2226;overflow:hidden}
+    .meter > span{display:block;height:100%;width:0%;background:linear-gradient(90deg,#34ffcd,#78e0ff)}
+    .hint{color:#9fb0b6;font-size:.95rem}
+    .msg{margin-top:6px;color:#cde9ed;font-weight:600}
+    /* ====== STATS ====== */
+    .stats-card{padding:16px}
+    .stats-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+    .stats-title{font-weight:700}
+    .stats-table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px;border:1px solid #1f2a2f}
+    .stats-table th,.stats-table td{padding:10px;border-bottom:1px solid #1a2328;text-align:center}
+    .pill{padding:6px 10px;border-radius:999px;font-weight:700;font-size:.9rem}
+    .ok{background:rgba(0,224,182,.18);color:#9bffe9;border:1px solid rgba(0,224,182,.35)}
+    .pending{background:rgba(255,198,0,.15);color:#ffd66e;border:1px solid rgba(255,198,0,.35)}
+    .bad{background:rgba(255,77,77,.18);color:#ffb0b0;border:1px solid rgba(255,77,77,.35)}
+    .circle{
+      width:48px;height:48px;border-radius:50%;
+      background:
+        conic-gradient(var(--primary) calc(var(--pct,0)*1%), #263136 0),
+        radial-gradient(circle at 50% 50%, #0f1518 52%, transparent 53%),
+        #0f1518;
+      display:grid;place-items:center;font-weight:800;color:#d5ffff;font-size:.85rem;margin:auto
+    }
+    .footer-note{padding:10px 16px;color:#89a3ab;text-align:center}
+    @media (min-width:820px){
+      .rec-card{grid-template-columns:1.1fr .9fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" aria-hidden="true"></div>
+  <header>
+    <div class="head-wrap">
+      <img src="./logo-full.png" alt="Sawtna" class="logo" />
+      <div class="title">منصة "صوتنا" — تسجيل الصوت</div>
     </div>
-    <div class="hr"></div>
-    <div id="progressInfo" class="subtitle">0/0</div>
-    <div id="textBox" class="card" style="background:#0b0f11; border-color:#1c2d31">
-      <h2 id="currText" style="margin:0; font-weight:800"></h2>
+  </header>
+
+  <main>
+    <div class="container">
+      <!-- بطاقة التسجيل -->
+      <section class="glass rec-card">
+        <div>
+          <div class="row">
+            <label class="label">اسم المتحدث</label>
+            <input type="text" id="speakerName" placeholder="مثال: محمد، هبة، مازن"/>
+          </div>
+          <div class="row">
+            <label class="label">نوع الميكروفون</label>
+            <select id="micType">
+              <option value="phone">هاتف</option>
+              <option value="usb">USB</option>
+              <option value="laptop">لابتوب</option>
+            </select>
+          </div>
+
+          <div style="margin:10px 0 6px;display:flex;align-items:center;gap:10px">
+            <span class="label">النص الحالي</span>
+            <div class="progress">
+              <div class="bar"><span id="bar"></span></div>
+              <div id="progressInfo">0/0</div>
+            </div>
+          </div>
+
+          <div id="currText" class="text-box">⏳ جارِ تحميل النص…</div>
+
+          <div class="actions" style="margin-top:10px">
+            <button id="prev" class="btn ghost">⏪ نص سابق</button>
+            <button id="skip" class="btn ghost">⏩ تخطّي النص</button>
+            <button id="recBtn" class="btn primary">ابدأ التسجيل 🎙️</button>
+          </div>
+
+          <div style="margin-top:14px">
+            <div class="meter"><span id="meter"></span></div>
+            <div class="hint">لأفضل جودة: سجّل في غرفة هادئة، قرّب الهاتف 15-20 سم، وتحدث بثبات.</div>
+            <div id="recMsg" class="msg"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="label" style="margin-bottom:6px">مؤشّر شدّة الصوت</div>
+          <div class="glass" style="padding:12px">
+            <div style="height:140px;background:#0b0f12;border:1px solid #1e2a30;border-radius:14px;display:grid;place-items:center;color:#9ecbd0">
+              يبدأ التحريك عند بدء التسجيل
+            </div>
+          </div>
+          <div class="label" style="margin:12px 0 6px">ملاحظات سريعة</div>
+          <ul style="margin:0;padding-inline-start:20px;color:#c4d7db">
+            <li>لا تتوقف أثناء قراءة الجملة.</li>
+            <li>أعد التسجيل إذا كان هناك ضجيج واضح.</li>
+            <li>بعد الحفظ ينتقل تلقائيًا إلى النص التالي.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- بطاقة الإحصاءات -->
+      <section class="glass stats-card">
+        <div class="stats-head">
+          <div class="stats-title">🎧 إحصاءات المساهمين</div>
+          <div class="label" id="statsSummary">—</div>
+        </div>
+        <div id="statsEmpty" class="label" style="display:none">لا توجد تسجيلات حتى الآن.</div>
+        <div style="overflow:auto">
+          <table class="stats-table" id="statsTable">
+            <thead>
+              <tr>
+                <th>المتحدث</th>
+                <th>عدد التسجيلات</th>
+                <th>من أصل</th>
+                <th>التقدّم</th>
+                <th>آخر تسجيل</th>
+                <th>الحالة الأبرز</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="footer-note">© Sawtna — Sudanese Voice Lab</div>
     </div>
-    <div class="row center" style="gap:10px">
-      <button id="prev" class="btn ghost">⏮️ نص سابق</button>
-      <button id="skip" class="btn ghost">⏭️ تخطّي النص</button>
-    </div>
-    <div class="hr"></div>
-    <div class="meter" aria-hidden="true"><span id="meter"></span></div>
-    <div class="wave" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
-    <div class="row center" style="margin-top:12px"><button id="recBtn" class="btn">ابدأ التسجيل 🎙️</button></div>
-    <div id="recMsg" class="subtitle" style="margin-top:10px"></div>
-  </section>
-</main>
-<script type="module" src="./record.js"></script>
-</body></html>
+  </main>
+
+  <script type="module" src="./record.js"></script>
+</body>
+</html>
