@@ -4,27 +4,137 @@
   <meta charset="utf-8">
   <title>🎙️ التسجيل - صوتنا</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root{
+      --bg1:#0b0b0b; --bg2:#121212; --brand:#00e0b6; --brand-2:#00bfa6; --muted:#ccc;
+      --danger:#ff4d4d; --warn1:#ffdb4d; --warn2:#ffb400; --ok1:#00e06b; --ok2:#00b951;
+    }
+    *{box-sizing:border-box}
+    body {
+      background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+      color: #f5f5f5;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Cairo, Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    header { padding: 20px; position: relative; }
+    .logo { width: 140px; margin-bottom: 10px; }
+    h2 { font-weight: 700; margin-top: 0; color: var(--brand); }
+
+    /* مؤشر التسجيل */
+    .recording-indicator {
+      position: absolute; top: 20px; left: 20px;
+      display: flex; align-items: center; gap: 6px;
+      opacity: 0; transition: opacity .3s;
+    }
+    .recording-indicator.active { opacity: 1; }
+    .record-dot {
+      width: 14px; height: 14px; background-color: var(--danger);
+      border-radius: 50%; box-shadow: 0 0 10px var(--danger); animation: pulse 1s infinite;
+    }
+    @keyframes pulse { 0%{transform:scale(1);opacity:1} 50%{transform:scale(1.35);opacity:.6} 100%{transform:scale(1);opacity:1} }
+    .record-text { font-size: 14px; color: var(--danger); }
+
+    /* العد التنازلي */
+    #countdownWrap{
+      position: fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      pointer-events: none; opacity:0; transition:opacity .2s;
+    }
+    #countdownWrap.active{ opacity:1; }
+    .countdown-stage{ position:relative; width:220px; height:220px; }
+    .countdown-number{
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      font-size: 96px; font-weight: 800; color: var(--brand); text-shadow:0 0 20px rgba(0,0,0,.5);
+      animation: fadeZoom 1s;
+    }
+    @keyframes fadeZoom { 0%{opacity:0; transform:scale(.8)} 50%{opacity:1; transform:scale(1.1)} 100%{opacity:0; transform:scale(1.4)} }
+    .ring{ transform:rotate(-90deg); }
+    .ring circle{ fill:none; stroke-width:14; }
+    .ring .bg{ stroke: rgba(255,255,255,.1); }
+    .ring .fg{ stroke: var(--brand); stroke-linecap:round; transition: stroke .2s; filter: drop-shadow(0 0 8px rgba(0,224,182,.6)); }
+
+    .container {
+      max-width: 680px; margin: 12px auto 32px; background: rgba(255,255,255,0.05);
+      padding: 25px; border-radius: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.35);
+    }
+    .help{
+      font-size:14px; color:var(--muted); margin-top:4px;
+    }
+    .help a{ color:var(--brand); text-decoration:underline; }
+
+    select, button {
+      margin: 8px; padding: 11px 20px; border-radius: 10px; border: none; font-size: 16px;
+    }
+    button {
+      background-color: var(--brand-2); color: #fff; cursor: pointer; transition: transform .15s, background .2s;
+    }
+    button:hover { transform: translateY(-1px) scale(1.03); background-color: var(--brand); }
+    button:disabled { background: #555; cursor: not-allowed; transform:none; }
+
+    #textBox {
+      background: #1a1a1a; padding: 25px; border-radius: 14px; margin-top: 18px;
+    }
+    #currentText {
+      font-size: 20px; line-height: 1.8; font-weight: 600; color: #fff; margin-bottom: 10px;
+    }
+
+    #progressBar { width: 100%; height: 10px; background: #333; border-radius: 8px; overflow: hidden; margin-top: 10px; }
+    #progressFill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--brand), var(--brand-2)); border-radius: 8px; transition: width .4s ease-in-out, background .4s; }
+
+    #progressInfo, #speakerStats, #globalStats {
+      font-size: 14px; color: var(--muted); margin-top: 6px;
+    }
+    #status { margin-top: 12px; font-weight: 600; color: var(--brand); }
+
+    /* تجاوب الهاتف */
+    @media (max-width:520px){
+      .logo{ width:120px }
+      .countdown-number{ font-size: 72px }
+      .countdown-stage{ width:180px; height:180px }
+    }
+  </style>
 </head>
 <body>
+  <!-- عد تنازلي دائري -->
+  <div id="countdownWrap">
+    <div class="countdown-stage">
+      <svg class="ring" width="100%" height="100%" viewBox="0 0 220 220">
+        <circle class="bg" cx="110" cy="110" r="94"></circle>
+        <circle class="fg" id="ringFg" cx="110" cy="110" r="94" stroke-dasharray="590" stroke-dashoffset="590"></circle>
+      </svg>
+      <div class="countdown-number" id="countNum">3</div>
+    </div>
+  </div>
+
   <div class="container">
     <header>
+      <div class="recording-indicator" id="recordIndicator">
+        <div class="record-dot"></div>
+        <span class="record-text">يتم التسجيل الآن...</span>
+      </div>
       <img src="logo-full.png" class="logo" alt="صوتنا">
       <h2>🎙️ تسجيل الأصوات – منصة صوتنا</h2>
+      <div class="help">نصيحة: اختر اسمك واضغط <b>ابدأ التسجيل</b>. سيظهر عدٌّ تنازلي (3 ثوانٍ) مع تنبيه صوتي ثم يبدأ التسجيل تلقائيًا.</div>
     </header>
 
     <section id="record-section">
       <label for="speaker">اختر اسمك:</label>
       <select id="speaker"></select>
+      <div id="speakerStats">...</div>
+      <div id="globalStats">...</div>
 
       <div id="textBox">
-        <h3>النص الحالي:</h3>
+        <h3 style="color:var(--brand);">النص الحالي:</h3>
         <p id="currentText">جارٍ تحميل النص...</p>
+        <div id="progressInfo">...</div>
+        <div id="progressBar"><div id="progressFill"></div></div>
       </div>
 
-      <button id="recordBtn" class="btn">🎤 ابدأ التسجيل</button>
-      <button id="stopBtn" class="btn" disabled>⏹️ أوقف التسجيل</button>
-      <button id="uploadBtn" class="btn" disabled>⬆️ ارفع التسجيل</button>
+      <button id="recordBtn">🎤 ابدأ التسجيل</button>
+      <button id="stopBtn" disabled>⏹️ أوقف التسجيل</button>
+      <button id="uploadBtn" disabled>⬆️ ارفع التسجيل</button>
       <p id="status"></p>
     </section>
   </div>
@@ -37,45 +147,155 @@
     );
     const BUCKET = "recordings";
 
+    // عناصر DOM
+    const wrap = document.getElementById("countdownWrap");
+    const ringFg = document.getElementById("ringFg");
+    const countNum = document.getElementById("countNum");
+    const indicator = document.getElementById("recordIndicator");
     const speakerSelect = document.getElementById("speaker");
     const currentText = document.getElementById("currentText");
     const recordBtn = document.getElementById("recordBtn");
     const stopBtn = document.getElementById("stopBtn");
     const uploadBtn = document.getElementById("uploadBtn");
     const status = document.getElementById("status");
+    const progressInfo = document.getElementById("progressInfo");
+    const speakerStats = document.getElementById("speakerStats");
+    const globalStats = document.getElementById("globalStats");
+    const progressFill = document.getElementById("progressFill");
 
     let recorder, chunks = [], audioBlob, currentTextId = null;
 
-    // تحميل أسماء المتحدثين
-    async function loadSpeakers() {
-      const { data } = await supabase.from("speakers").select("id, name");
-      speakerSelect.innerHTML = data.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
+    // صوت تنبيه
+    function playBeep(longBeep = false) {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(longBeep ? 800 : 1000, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+      osc.start();
+      osc.stop(audioCtx.currentTime + (longBeep ? 0.45 : 0.2));
     }
 
-    // تحميل النص المتاح
+    // تحميل المتحدثين
+    async function loadSpeakers() {
+      const { data } = await supabase.from("speakers").select("id, name");
+      if (!data || !data.length) {
+        speakerSelect.innerHTML = '<option value="">— لا يوجد متحدثون —</option>';
+        return;
+      }
+      speakerSelect.innerHTML = data.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
+      updateSpeakerStats(data[0].id);
+      updateGlobalStats();
+    }
+
+    // عداد المتحدث
+    async function updateSpeakerStats(speakerId) {
+      const { count } = await supabase
+        .from("recordings").select("*", { count: "exact", head: true })
+        .eq("speaker_id", speakerId);
+      speakerStats.textContent = `🎧 لقد سجلت ${count || 0} ملفًا بصوتك حتى الآن.`;
+    }
+
+    // العداد العام
+    async function updateGlobalStats() {
+      const { count } = await supabase
+        .from("recordings").select("*", { count: "exact", head: true });
+      globalStats.textContent = `🌍 إجمالي التسجيلات في المنصة: ${count || 0} ملفًا.`;
+    }
+
+    // شريط التقدم
+    function updateProgressBar(count, max) {
+      const pct = max ? (count / max) * 100 : 0;
+      progressFill.style.width = `${pct}%`;
+      if (pct < 50) {
+        progressFill.style.background = "linear-gradient(90deg, var(--ok1), var(--ok2))";
+      } else if (pct < 80) {
+        progressFill.style.background = "linear-gradient(90deg, var(--warn1), var(--warn2))";
+      } else {
+        progressFill.style.background = "linear-gradient(90deg, var(--danger), #ff1a1a)";
+      }
+    }
+
+    // تحميل نص متاح
     async function loadText() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("texts")
         .select("id, content, record_count, max_recordings")
         .eq("status", "available")
         .order("record_count", { ascending: true })
-        .limit(1)
-        .single();
+        .limit(1).single();
+
+      if (error) {
+        currentText.textContent = "⚠️ حدث خطأ في تحميل النص.";
+        console.error(error);
+        return;
+      }
 
       if (!data) {
-        currentText.textContent = "تم الانتهاء من جميع النصوص ✅";
+        currentText.textContent = "✅ تم الانتهاء من جميع النصوص!";
+        progressInfo.textContent = "";
+        progressFill.style.width = "100%";
         recordBtn.disabled = true;
         return;
       }
 
       currentTextId = data.id;
       currentText.textContent = data.content;
+      progressInfo.textContent = `سُجّل ${data.record_count} من أصل ${data.max_recordings} مرات.`;
+      updateProgressBar(data.record_count, data.max_recordings);
     }
 
-    // التسجيل الصوتي
-    recordBtn.onclick = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      recorder = new MediaRecorder(stream);
+    // عد تنازلي دائري 3 ثوانٍ
+    async function startCountdownAndRecord() {
+      let duration = 3000; // ms
+      let start = performance.now();
+      let shownNumber = 3; // 3..2..1..
+      const circumference = 2 * Math.PI * 94; // ≈ 589
+      ringFg.setAttribute("stroke-dasharray", circumference.toString());
+      ringFg.setAttribute("stroke-dashoffset", circumference.toString());
+
+      wrap.classList.add("active");
+      countNum.textContent = shownNumber;
+      playBeep();
+
+      function step(now){
+        let elapsed = now - start;
+        let remaining = Math.max(duration - elapsed, 0);
+        // تحديث الرقم كل 1000ms
+        let nextNumber = Math.ceil(remaining / 1000);
+        if (nextNumber !== shownNumber && nextNumber >= 1){
+          shownNumber = nextNumber;
+          countNum.textContent = shownNumber;
+          countNum.style.animation = "none"; void countNum.offsetWidth; countNum.style.animation = "fadeZoom 1s";
+          playBeep();
+        }
+        // تحديث محيط الدائرة (من 0 إلى كامل خلال 3 ثوانٍ)
+        const t = Math.min(Math.max(elapsed / duration, 0), 1);
+        const offset = circumference * t;
+        ringFg.setAttribute("stroke-dashoffset", (circumference - offset).toString());
+
+        if (remaining > 0){
+          requestAnimationFrame(step);
+        } else {
+          wrap.classList.remove("active");
+          playBeep(true);
+          startRecording();
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    // بدء التسجيل
+    async function startRecording() {
+      try{
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(stream);
+      }catch(e){
+        alert("لا يمكن الوصول للميكروفون. يرجى السماح للمتصفح.");
+        return;
+      }
       chunks = [];
       recorder.ondataavailable = e => chunks.push(e.data);
       recorder.onstop = () => {
@@ -85,13 +305,17 @@
       recorder.start();
       recordBtn.disabled = true;
       stopBtn.disabled = false;
+      indicator.classList.add("active");
       status.textContent = "🎙️ جاري التسجيل...";
-    };
+    }
 
+    // أزرار التحكم
+    recordBtn.onclick = () => startCountdownAndRecord();
     stopBtn.onclick = () => {
-      recorder.stop();
+      try{ recorder.stop(); }catch(e){}
       recordBtn.disabled = false;
       stopBtn.disabled = true;
+      indicator.classList.remove("active");
       status.textContent = "✅ تم إيقاف التسجيل.";
     };
 
@@ -104,31 +328,35 @@
 
       const fileName = `${speakerId}_${Date.now()}.webm`;
       status.textContent = "⬆️ جاري رفع التسجيل...";
-      const { error: uploadError } = await supabase.storage
-        .from(BUCKET)
-        .upload(fileName, audioBlob);
 
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET).upload(fileName, audioBlob);
       if (uploadError) {
         status.textContent = "❌ فشل في الرفع.";
+        console.error(uploadError);
         return;
       }
 
-      // حفظ البيانات في الجدول
       await supabase.from("recordings").insert({
-        speaker_id: speakerId,
-        text_id: currentTextId,
-        storage_path: fileName
+        speaker_id: speakerId, text_id: currentTextId, storage_path: fileName
       });
 
-      // تحديث عداد النص
       await supabase.rpc("increment_record_count", { text_uuid: currentTextId });
 
       status.textContent = "✅ تم رفع التسجيل بنجاح!";
       uploadBtn.disabled = true;
-      loadText();
+      await updateSpeakerStats(speakerId);
+      await updateGlobalStats();
+      await loadText();
     };
 
-    // تحميل البيانات عند التشغيل
+    // تغيّر المتحدث
+    speakerSelect.onchange = (e) => {
+      updateSpeakerStats(e.target.value);
+      updateGlobalStats();
+    };
+
+    // بدء
     loadSpeakers();
     loadText();
   </script>
