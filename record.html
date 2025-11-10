@@ -1,26 +1,103 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>منصة صوتنا – التسجيل الصوتي</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>صوتنا – التسجيل الصوتي</title>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-  <header>
-    <img src="logo-full.png" alt="شعار صوتنا" class="logo">
-    <h2>🎧 صفحة التسجيل الصوتي</h2>
-    <p>اختر النص وسجّل صوتك بوضوح وجودة عالية.</p>
-  </header>
+  <div class="container">
+    <header>
+      <img src="logo-full.png" class="logo" alt="صوتنا"/>
+      <h2>🎧 التسجيل الصوتي</h2>
+      <p class="sub">اختر اسمك والنص، ثم سجّل وارفع التسجيل.</p>
+    </header>
 
-  <main>
-    <button class="btn">ابدأ التسجيل</button>
-    <button class="btn">إيقاف</button>
-    <button class="btn">رفع التسجيل</button>
-  </main>
+    <div class="panel">
+      <div class="grid">
+        <div class="field">
+          <label>المتحدث</label>
+          <select id="speaker"></select>
+        </div>
+        <div class="field">
+          <label>الجملة</label>
+          <select id="textSel"></select>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label>جلسة التسجيل</label>
+          <input id="sessionId" placeholder="S-YYYY-MM-DD-A"/>
+        </div>
+        <div class="field">
+          <label>نوع الميكروفون</label>
+          <input id="micType" value="USB"/>
+        </div>
+      </div>
+      <div class="separator"></div>
+      <p id="currentText" class="notice"></p>
+      <div class="grid">
+        <button id="start" class="btn">ابدأ التسجيل</button>
+        <button id="stop" class="btn-ghost" disabled>إيقاف</button>
+      </div>
+      <audio id="player" controls></audio>
+      <div class="grid">
+        <button id="upload" class="btn-ok" disabled>رفع التسجيل</button>
+        <button id="reset" class="btn-ghost" disabled>تسجيل جديد</button>
+      </div>
+      <p id="msg" class="notice"></p>
+    </div>
 
-  <footer>
-    <a href="index.html" class="back">⬅ الرجوع للرئيسية</a>
-  </footer>
+    <div class="footer">تم التطوير بواسطة محمد بابكر وفريق صوتنا 2025 ✨</div>
+  </div>
+
+  <script type="module">
+    import { supabase, BUCKET } from './config.js';
+    const $ = (s)=>document.querySelector(s);
+    const speakerSel=$('#speaker'), textSel=$('#textSel'), sessionId=$('#sessionId'), micType=$('#micType'), currentText=$('#currentText');
+    const startBtn=$('#start'), stopBtn=$('#stop'), uploadBtn=$('#upload'), resetBtn=$('#reset'), player=$('#player'), msg=$('#msg');
+
+    async function preload(){
+      const sp=await supabase.from('speakers').select('id,code,name').order('code');
+      speakerSel.innerHTML=(sp.data||[]).map(s=>`<option value="${s.id}">${s.code} — ${s.name||''}</option>`).join('');
+      const tx=await supabase.from('texts').select('id,code,content').order('code');
+      textSel.innerHTML=(tx.data||[]).map(t=>`<option value="${t.id}" data-content="${encodeURIComponent(t.content)}">${t.code}</option>`).join('');
+      if(tx.data&&tx.data[0]) currentText.textContent=decodeURIComponent(textSel.options[0].dataset.content);
+      const d=new Date().toISOString().slice(0,10); sessionId.value=`S-${d}-A`;
+    }
+    textSel.addEventListener('change',()=>{ const opt=textSel.options[textSel.selectedIndex]; currentText.textContent=decodeURIComponent(opt.dataset.content||'');});
+    preload();
+
+    let mediaRecorder, chunks=[];
+    startBtn.onclick=async()=>{
+      try{
+        const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+        mediaRecorder=new MediaRecorder(stream,{mimeType:'audio/webm'}); chunks=[];
+        mediaRecorder.ondataavailable=e=>chunks.push(e.data);
+        mediaRecorder.onstop=()=>{ const blob=new Blob(chunks,{type:'audio/webm'}); player.src=URL.createObjectURL(blob); uploadBtn.disabled=false; resetBtn.disabled=false; };
+        mediaRecorder.start(); startBtn.disabled=true; stopBtn.disabled=false; msg.textContent='جارٍ التسجيل...';
+      }catch(e){ msg.textContent='لم يتم الوصول للميكروفون.'; }
+    };
+    stopBtn.onclick=()=>{ mediaRecorder?.stop(); startBtn.disabled=false; stopBtn.disabled=true; msg.textContent='تم إيقاف التسجيل.'; };
+    resetBtn.onclick=()=>{ player.removeAttribute('src'); uploadBtn.disabled=true; resetBtn.disabled=true; };
+
+    uploadBtn.onclick=async()=>{
+      msg.textContent='رفع التسجيل...';
+      const blob=new Blob(chunks,{type:'audio/webm'});
+      const spId=speakerSel.value, txId=textSel.value; if(!spId||!txId){ msg.textContent='اختر المتحدث والنص أولاً.'; return; }
+      const sp=await supabase.from('speakers').select('code,name').eq('id',spId).maybeSingle();
+      const tx=await supabase.from('texts').select('code,content').eq('id',txId).maybeSingle();
+      const spCode=sp.data?.code||'SPK', txCode=tx.data?.code||'TXT'; const ts=new Date().toISOString().replace(/[:.]/g,'-');
+      const fileName=`${spCode}_${txCode}_T1_${ts}.webm`; const path=`${spCode}/${sessionId.value}/${fileName}`;
+
+      const up=await supabase.storage.from(BUCKET).upload(path, blob, {contentType:'audio/webm', upsert:false});
+      if(up.error){ msg.textContent='فشل الرفع: '+up.error.message; return; }
+      const ins=await supabase.from('recordings').insert({speaker_id:spId, text_id:txId, storage_path:path, qa_status:'pending', mic_type:micType.value||null, session_id:sessionId.value||null});
+      if(ins.error){ msg.textContent='تم الرفع لكن فشل إدخال السجل: '+ins.error.message; return; }
+      msg.textContent='تم الرفع والتسجيل بنجاح ✅'; uploadBtn.disabled=true;
+    };
+  </script>
 </body>
 </html>

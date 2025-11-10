@@ -1,24 +1,61 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>منصة صوتنا – المتابعة</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>صوتنا – المتابعة</title>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-  <header>
-    <img src="logo-full.png" alt="شعار صوتنا" class="logo">
-    <h2>📊 لوحة متابعة التسجيلات</h2>
-    <p>تابع عدد التسجيلات المقبولة والمرفوضة لكل متحدث.</p>
-  </header>
+  <div class="container">
+    <header>
+      <img src="logo-full.png" class="logo" alt="صوتنا"/>
+      <h2>📈 لوحة المتابعة</h2>
+      <p class="sub">إحصاءات عامة حول التقدم.</p>
+    </header>
 
-  <main>
-    <div class="chart-placeholder">📈 الرسم البياني قيد التحضير...</div>
-  </main>
+    <div class="panel kpis">
+      <div class="card"><div>إجمالي التسجيلات</div><div id="k-total" class="num">—</div></div>
+      <div class="card"><div>المقبولة</div><div id="k-approved" class="num">—</div></div>
+      <div class="card"><div>المرفوضة</div><div id="k-rejected" class="num">—</div></div>
+    </div>
 
-  <footer>
-    <a href="index.html" class="back">⬅ الرجوع للرئيسية</a>
-  </footer>
+    <div class="panel">
+      <div id="bySpeaker" class="list"></div>
+      <p class="small">ترتيب المتحدثين حسب عدد التسجيلات.</p>
+    </div>
+
+    <div class="footer">منصة صوتنا 2025</div>
+  </div>
+
+  <script type="module">
+    if (!sessionStorage.getItem('sawtna_admin_ok')){
+      const pw = prompt('أدخل كلمة مرور المشرف:');
+      if(pw !== '70003mbgz'){ location.href = 'admin.html'; }
+      else { sessionStorage.setItem('sawtna_admin_ok', '1'); }
+    }
+
+    import { supabase } from './config.js';
+    const totalEl=document.getElementById('k-total'), appEl=document.getElementById('k-approved'), rejEl=document.getElementById('k-rejected');
+    async function loadKPIs(){
+      const all=await supabase.from('recordings').select('id',{count:'exact', head:true});
+      const app=await supabase.from('recordings').select('id',{count:'exact', head:true}).eq('qa_status','approved');
+      const rej=await supabase.from('recordings').select('id',{count:'exact', head:true}).eq('qa_status','rejected');
+      totalEl.textContent=all.count??0; appEl.textContent=app.count??0; rejEl.textContent=rej.count??0;
+    }
+    async function loadBySpeaker(){
+      const sp=await supabase.from('speakers').select('id,code,name').order('code');
+      const container=document.getElementById('bySpeaker'); container.innerHTML='';
+      for(const s of (sp.data||[])){
+        const cnt=await supabase.from('recordings').select('id',{count:'exact', head:true}).eq('speaker_id', s.id);
+        const item=document.createElement('div'); item.className='card';
+        item.innerHTML = `<div class="badge">${s.code} — ${s.name||''}</div><div class="num">${cnt.count||0}</div>`;
+        container.appendChild(item);
+      }
+    }
+    await loadKPIs();
+    await loadBySpeaker();
+  </script>
 </body>
 </html>

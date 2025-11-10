@@ -1,0 +1,51 @@
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>صوتنا – دخول المشرف</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="logo-full.png" class="logo" alt="صوتنا"/>
+      <h2>🔐 بوابة المشرف</h2>
+      <p class="sub">أدخل كلمة المرور للوصول إلى أدوات المراجعة والمتابعة.</p>
+    </header>
+    <div class="panel">
+      <div class="field">
+        <label>كلمة المرور</label>
+        <input id="adminPass" type="password" placeholder="•••••••••" />
+      </div>
+      <div class="actions">
+        <button id="enter" class="btn">دخول</button>
+      </div>
+      <p id="msg" class="notice"></p>
+      <div id="adminLinks" class="nav" style="display:none;margin-top:12px">
+        <a href="review.html"><button class="btn-ok">✅ صفحة المراجعة</button></a>
+        <a href="progress.html"><button class="btn">📈 صفحة المتابعة</button></a>
+      </div>
+    </div>
+    <p class="small center">في حال نسيت كلمة المرور تواصل مع مسؤول المنصة.</p>
+    <div class="footer">منصة صوتنا 2025</div>
+  </div>
+  <script type="module">
+    const PASS = "70003mbgz";
+    const passIn = document.getElementById('adminPass');
+    const enter = document.getElementById('enter');
+    const msg = document.getElementById('msg');
+    const links = document.getElementById('adminLinks');
+    enter.onclick = () => {
+      if(passIn.value.trim() === PASS){
+        msg.textContent = "تم التحقق ✅";
+        links.style.display = "flex";
+        sessionStorage.setItem('sawtna_admin_ok', '1');
+      }else{
+        msg.textContent = "كلمة المرور غير صحيحة.";
+      }
+    };
+  </script>
+</body>
+</html>
