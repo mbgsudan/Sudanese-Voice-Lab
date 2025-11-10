@@ -1,258 +1,142 @@
-// record.js — واجهة التسجيل + إحصاءات المساهمين (بدون أي تغيير في إعداداتك)
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-// نحافظ على نفس الإعدادات القديمة من config.js إن كنت تستخدمه.
-// إن لم يكن لديك config.js فضع القيم مباشرة هنا:
-const SUPABASE_URL = window?.SAWTNA?.SUPABASE_URL || "https://qcctqvmwwpsoiexgdqwp.supabase.co";
-const SUPABASE_ANON_KEY = window?.SAWTNA?.SUPABASE_ANON || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ";
-const BUCKET = window?.SAWTNA?.BUCKET || "recordings";
+const supabase = createClient(
+  "https://qcctqvmwwpsoiexgdqwp.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ"
+);
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// عناصر DOM
-const $ = s => document.querySelector(s);
-const speakerName = $('#speakerName');
-const micType = $('#micType');
-const recBtn = $('#recBtn');
-const bar = $('#bar');
-const meter = $('#meter');
-const msg = $('#recMsg');
-const currText = $('#currText');
-const progressInfo = $('#progressInfo');
-
-// إحصاءات
-const statsTable = $('#statsTable tbody');
-const statsEmpty = $('#statsEmpty');
-const statsSummary = $('#statsSummary');
+const speakerSelect = document.getElementById("speakerName");
+const newSpeakerDiv = document.getElementById("newSpeakerDiv");
+const newSpeakerInput = document.getElementById("newSpeakerInput");
+const micType = document.getElementById("micType");
+const currText = document.getElementById("currText");
+const progressInfo = document.getElementById("progressInfo");
+const recBtn = document.getElementById("recBtn");
+const msg = document.getElementById("recMsg");
+const statsTable = document.getElementById("statsTable").querySelector("tbody");
 
 let texts = [];
 let idx = 0;
-let mediaRecorder;
 let chunks = [];
-let isRecording = false;
+let mediaRecorder;
 
-// ===================== تحميل النصوص =====================
+// تحميل النصوص
 async function loadTexts() {
   try {
-    // 💡 جدولك يعتمد uuid بدل id — نلتزم به
-    const { data, error } = await supabase
-      .from('texts')
-      .select('uuid, content')
-      .order('created_at', { ascending: true });
-
+    const { data, error } = await supabase.from("texts").select("uuid, content").order("created_at", { ascending: true });
     if (error) throw error;
-
-    if (!data || data.length === 0) {
-      currText.textContent = '⚠️ لا توجد نصوص جاهزة الآن — يرجى المحاولة لاحقًا.';
-      progressInfo.textContent = '0/0';
-      bar.style.width = '0%';
+    if (!data || !data.length) {
+      currText.textContent = "⚠️ لا توجد نصوص متاحة حالياً.";
       return;
     }
-
     texts = data;
     idx = 0;
     renderText();
   } catch (e) {
-    console.error(e);
-    currText.textContent = 'تعذّر تحميل النص. تحقق من صلاحيات Supabase أو سياسة RLS.';
+    currText.textContent = "⚠️ تعذّر تحميل النصوص. تأكد من تفعيل سياسة القراءة (RLS) لجدول texts.";
   }
 }
 
 function renderText() {
-  const total = texts.length;
-  if (total === 0) return;
+  if (!texts.length) return;
   const t = texts[idx];
-  currText.textContent = t?.content || '—';
-  progressInfo.textContent = `${idx + 1}/${total}`;
-  const pct = Math.max(0, Math.min(100, Math.round(((idx + 1) / total) * 100)));
-  bar.style.width = pct + '%';
+  currText.textContent = t.content;
+  progressInfo.textContent = `${idx + 1}/${texts.length}`;
 }
 
-// أزرار تنقّل
-$('#prev').onclick = () => { if (idx > 0) { idx--; renderText(); } };
-$('#skip').onclick = () => { if (idx < texts.length - 1) { idx++; renderText(); } };
-
-// ===================== التسجيل =====================
-async function ensureMedia() {
-  if (mediaRecorder) return mediaRecorder;
-
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-      sampleRate: 48000,
-      channelCount: 1
-    }
-  });
-
-  mediaRecorder = new MediaRecorder(stream, {
-    mimeType: 'audio/webm; codecs=opus',
-    audioBitsPerSecond: 128000
-  });
-
-  mediaRecorder.ondataavailable = (e) => { if (e.data?.size) chunks.push(e.data); };
-
-  mediaRecorder.onstop = async () => {
-    pulse(false);
-    isRecording = false;
-    recBtn.textContent = 'ابدأ التسجيل 🎙️';
-
-    const blob = new Blob(chunks, { type: 'audio/webm' });
-    chunks = [];
-
-    const spk = (speakerName.value || '').trim();
-    if (!spk) {
-      msg.textContent = '⚠️ اكتب اسم المتحدث أولًا.';
-      return;
-    }
-    if (!texts.length) {
-      msg.textContent = '⚠️ لا يوجد نص.';
-      return;
-    }
-
-    const storage_path = `${encodeURIComponent(spk)}/${Date.now()}.webm`;
-    const up = await supabase.storage.from(BUCKET).upload(storage_path, blob, { upsert: false });
-
-    if (up.error) {
-      console.error(up.error);
-      msg.textContent = '❌ فشل رفع الملف. حاول مجددًا.';
-      return;
-    }
-
-    // حفظ السجل في recordings (نفس أعمدة مشروعك)
-    const textId = texts[idx].uuid;
-    const ins = await supabase.from('recordings').insert([{
-      storage_path,
-      status: 'pending',
-      mic_type: micType.value,
-      text_id: textId,
-      speaker_name: spk
-    }]);
-
-    if (ins.error) {
-      console.error(ins.error);
-      msg.textContent = '⚠️ تم الرفع لكن فشل حفظ السجل في قاعدة البيانات.';
-      return;
-    }
-
-    msg.textContent = '✅ تم حفظ التسجيل بنجاح. انتقل للنص التالي…';
-    if (idx < texts.length - 1) {
-      idx++;
-      renderText();
-    }
-
-    // حدّث الإحصاءات مباشرة بعد أي تسجيل
-    loadStats();
-  };
-
-  return mediaRecorder;
-}
-
-function pulse(on) {
-  meter.style.width = on ? '100%' : '0%';
-  meter.style.transition = on ? 'width .25s ease' : 'none';
-}
-
-recBtn.onclick = async () => {
-  const rec = await ensureMedia();
-  if (!isRecording) {
-    isRecording = true;
-    rec.start();
-    recBtn.textContent = 'إيقاف ◼️';
-    msg.textContent = 'جارٍ التسجيل…';
-    pulse(true);
-  } else {
-    rec.stop();
+// تحميل أسماء المتحدثين
+async function loadSpeakers() {
+  try {
+    const { data, error } = await supabase.from("speakers").select("name").order("name", { ascending: true });
+    if (error) throw error;
+    speakerSelect.innerHTML = '<option value="">اختر المتحدث...</option>';
+    (data || []).forEach(sp => {
+      const opt = document.createElement("option");
+      opt.value = sp.name;
+      opt.textContent = sp.name;
+      speakerSelect.appendChild(opt);
+    });
+    speakerSelect.innerHTML += '<option value="__new__">➕ إضافة متحدث جديد</option>';
+  } catch (e) {
+    console.error("خطأ في تحميل أسماء المتحدثين", e);
   }
-};
+}
 
-// ===================== إحصاءات المساهمين =====================
+speakerSelect.addEventListener("change", () => {
+  if (speakerSelect.value === "__new__") newSpeakerDiv.style.display = "block";
+  else newSpeakerDiv.style.display = "none";
+});
+
+// التسجيل
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    mediaRecorder.onstop = async () => {
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      chunks = [];
+      let spk = "";
+      if (speakerSelect.value === "__new__") {
+        spk = newSpeakerInput.value.trim();
+        if (spk) await supabase.from("speakers").insert([{ name: spk }]);
+      } else spk = speakerSelect.value;
+
+      if (!spk) return (msg.textContent = "⚠️ يرجى اختيار أو كتابة اسمك.");
+
+      const { data, error } = await supabase.storage.from("recordings").upload(`${spk}/${Date.now()}.webm`, blob);
+      if (error) return (msg.textContent = "❌ فشل رفع الملف.");
+
+      await supabase.from("recordings").insert([{ speaker_name: spk, mic_type: micType.value, text_id: texts[idx].uuid, status: "pending" }]);
+      msg.textContent = "✅ تم حفظ التسجيل بنجاح.";
+      if (idx < texts.length - 1) { idx++; renderText(); }
+      loadStats();
+    };
+    mediaRecorder.start();
+    msg.textContent = "🎤 جارٍ التسجيل...";
+    recBtn.textContent = "⏹️ إيقاف التسجيل";
+    recBtn.onclick = stopRecording;
+  } catch (e) {
+    msg.textContent = "❌ لم يتم الوصول إلى الميكروفون.";
+  }
+}
+
+function stopRecording() {
+  mediaRecorder.stop();
+  msg.textContent = "📦 جارٍ حفظ التسجيل...";
+  recBtn.textContent = "🎙️ ابدأ التسجيل";
+  recBtn.onclick = startRecording;
+}
+
+// تحميل الإحصاءات
 async function loadStats() {
   try {
-    const [{ data: recs, error }, { data: totalTexts }] = await Promise.all([
-      supabase.from('recordings').select('speaker_name, status, created_at').order('created_at', { ascending: false }),
-      supabase.from('texts').select('uuid', { count: 'exact', head: true })
-    ]);
-
+    const { data, error } = await supabase.from("recordings").select("speaker_name,status,created_at");
     if (error) throw error;
-
-    const total = totalTexts?.length ?? totalTexts?.count ?? null; // حسب طريقة إرجاع العدّ عندك
-    const bySpeaker = new Map();
-
-    (recs || []).forEach(r => {
-      const key = (r.speaker_name || '—').trim() || '—';
-      if (!bySpeaker.has(key)) bySpeaker.set(key, { count: 0, last: null, statuses: {approved:0,pending:0,rejected:0} });
-      const entry = bySpeaker.get(key);
-      entry.count += 1;
-      entry.last = entry.last ? entry.last : r.created_at;
-      if (r.status && entry.statuses[r.status] !== undefined) entry.statuses[r.status] += 1;
+    statsTable.innerHTML = "";
+    const bySpeaker = {};
+    (data || []).forEach(r => {
+      if (!bySpeaker[r.speaker_name]) bySpeaker[r.speaker_name] = { count: 0, status: r.status, last: r.created_at };
+      bySpeaker[r.speaker_name].count++;
     });
-
-    // تفريغ الجدول
-    statsTable.innerHTML = '';
-
-    const speakers = [...bySpeaker.entries()];
-    if (!speakers.length) {
-      statsEmpty.style.display = 'block';
-      statsSummary.textContent = '—';
-      return;
-    }
-    statsEmpty.style.display = 'none';
-
-    let totalRecs = 0;
-
-    speakers.forEach(([name, info]) => {
-      totalRecs += info.count;
-      const dominant =
-        info.statuses.approved >= info.statuses.pending && info.statuses.approved >= info.statuses.rejected ? 'approved' :
-        info.statuses.rejected >= info.statuses.pending ? 'rejected' : 'pending';
-
-      const pillClass = dominant === 'approved' ? 'ok' : dominant === 'rejected' ? 'bad' : 'pending';
-
-      // نسبة التقدم من إجمالي النصوص
-      const denom = total || 0;
-      const progressPct = denom ? Math.round((info.count / denom) * 100) : 0;
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-weight:700">${escapeHTML(name)}</td>
-        <td>${info.count}</td>
-        <td>${denom || '—'}</td>
-        <td>
-          <div class="circle" style="--pct:${progressPct}">
-            ${progressPct}%
-          </div>
-        </td>
-        <td>${formatDate(info.last)}</td>
-        <td><span class="pill ${pillClass}">${labelStatus(dominant)}</span></td>
-      `;
+    Object.entries(bySpeaker).forEach(([name, info]) => {
+      const tr = document.createElement("tr");
+      const st = info.status === "approved" ? "ok" : info.status === "rejected" ? "bad" : "pending";
+      const stText = info.status === "approved" ? "مقبول" : info.status === "rejected" ? "مرفوض" : "قيد المراجعة";
+      tr.innerHTML = `<td>${name}</td><td>${info.count}</td><td>${new Date(info.last).toLocaleDateString("ar-EG")}</td><td class="${st}">${stText}</td>`;
       statsTable.appendChild(tr);
     });
-
-    statsSummary.textContent = `عدد المساهمين: ${speakers.length} • إجمالي التسجيلات: ${totalRecs}`;
   } catch (e) {
     console.error(e);
-    statsTable.innerHTML = '';
-    statsEmpty.style.display = 'block';
-    statsEmpty.textContent = '⚠️ تعذّر تحميل الإحصاءات.';
   }
 }
 
-function labelStatus(s){
-  return s === 'approved' ? '✅ مقبول' : s === 'rejected' ? '❌ مرفوض' : '⏳ قيد المراجعة';
-}
-function formatDate(iso){
-  if(!iso) return '—';
-  try{
-    const d = new Date(iso);
-    return d.toLocaleDateString('ar-EG', {year:'numeric',month:'long',day:'numeric'});
-  }catch{ return '—'; }
-}
-function escapeHTML(str=''){
-  return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
-}
+// أزرار
+document.getElementById("prev").onclick = () => { if (idx > 0) { idx--; renderText(); } };
+document.getElementById("skip").onclick = () => { if (idx < texts.length - 1) { idx++; renderText(); } };
+recBtn.onclick = startRecording;
 
-// تشغيل أوّل مرّة
+// التشغيل الأول
 loadTexts();
+loadSpeakers();
 loadStats();
