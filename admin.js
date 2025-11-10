@@ -25,3 +25,10 @@ async function bootAdmin() {
     if (error) throw error; console.info("📥 التسجيلات:", data);
   } catch (e) { console.error("❌ فشل تحميل التسجيلات:", e.message); }
 }
+document.addEventListener('DOMContentLoaded', ()=>{
+  const pwd = document.getElementById('admin-password');
+  const btn = document.getElementById('admin-login-btn');
+  if (pwd && btn) {
+    pwd.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ btn.click(); } });
+  }
+});
