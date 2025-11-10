@@ -49,4 +49,8 @@ async function uploadRecording(db, blob) {
     if (insErr) throw insErr;
     alert("✅ تم رفع تسجيلك بنجاح. شكراً لمساهمتك!");
   } catch (e) { alert("تعذر رفع التسجيل."); }
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="script.js"></script>
+<script src="record.js"></script>
 }
