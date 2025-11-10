@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>🎙️ تسجيل الأصوات - منصة صوتنا</title>
 <style>
 body {
@@ -22,14 +22,14 @@ body {
   box-shadow: 0 0 35px rgba(0,255,200,0.1);
 }
 .logo {
-  width: 80px;
+  width: 100px;
   margin-bottom: 15px;
 }
 h1 {
   color: #00e0b6;
 }
 p { color: #ccc; }
-select, input {
+select {
   padding: 10px;
   border-radius: 8px;
   border: none;
@@ -71,13 +71,19 @@ button:hover { transform: scale(1.05); }
 }
 .status { font-size: 15px; color: #aaa; margin-top: 10px; }
 .success { color: #00ff91; }
+#countdown {
+  font-size: 48px;
+  color: #00e0b6;
+  margin-top: 20px;
+  display: none;
+}
 </style>
 </head>
 <body>
 <div class="container">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Microphone_icon.svg/512px-Microphone_icon.svg.png" class="logo" alt="Mic" />
+  <img src="https://i.ibb.co/MhC1Qyc/mic-logo.png" class="logo" alt="Mic Logo" />
   <h1>🎧 تسجيل الأصوات - منصة صوتنا</h1>
-  <p>نصيحة: اختر اسمك واضغط ابدأ التسجيل. سيظهر عدّ تنازلي مع تنبيه صوتي، ثم يبدأ التسجيل تلقائيًا.</p>
+  <p>نصيحة: اختر اسمك واضغط ابدأ التسجيل. سيظهر عدّ تنازلي (3 ثوانٍ) مع تنبيه صوتي، ثم يبدأ التسجيل تلقائيًا.</p>
 
   <label>اختر اسمك:</label>
   <select id="speakerSelect">
@@ -93,6 +99,8 @@ button:hover { transform: scale(1.05); }
 
   <div id="volumeBar"><div id="volumeLevel"></div></div>
   <div class="status" id="volumeStatus">مستوى الصوت: جاهز</div>
+
+  <div id="countdown">3</div>
 
   <button id="startBtn">✏️ ابدأ التسجيل</button>
   <button id="stopBtn" disabled>⏹️ أوقف التسجيل</button>
@@ -119,6 +127,9 @@ let mediaRecorder, audioChunks = [];
 let audioContext, analyser, gainNode, source;
 let animationFrame;
 
+// 🎵 صوت التنبيه قبل التسجيل
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+
 // 🧠 تحميل أسماء المتحدثين
 async function loadSpeakers() {
   const { data, error } = await supabase.from("speakers").select("id, name");
@@ -134,7 +145,7 @@ async function loadSpeakers() {
 }
 loadSpeakers();
 
-// 🧠 عند اختيار متحدث
+// عند اختيار المتحدث
 document.getElementById("speakerSelect").addEventListener("change", async (e) => {
   const id = e.target.value;
   if (!id) return;
@@ -145,16 +156,33 @@ document.getElementById("speakerSelect").addEventListener("change", async (e) =>
   loadNewText();
 });
 
-// 📜 جلب نص جديد (غير مسجل مسبقًا)
+// جلب نص عشوائي غير مسجل مسبقًا
 async function loadNewText() {
-  const { data, error } = await supabase.from("texts").select("id, content").limit(1);
+  const { data, error } = await supabase
+    .from("texts")
+    .select("id, content")
+    .limit(1)
+    .order("random()");
   if (error || !data.length) {
-    document.getElementById("recordText").textContent = "لا توجد نصوص متاحة حاليًا.";
+    document.getElementById("recordText").textContent = "لا توجد نصوص متاحة.";
     return;
   }
   currentTextId = data[0].id;
   document.getElementById("recordText").textContent = data[0].content;
-  document.getElementById("recordCount").textContent = "سجل 0 من أصل 5 مرات.";
+  document.getElementById("recordCount").textContent = "سجل النص بوضوح.";
+}
+
+// 🔢 العد التنازلي قبل التسجيل
+async function startCountdown() {
+  const countdown = document.getElementById("countdown");
+  countdown.style.display = "block";
+  for (let i = 3; i > 0; i--) {
+    countdown.textContent = i;
+    beep.play();
+    await new Promise(r => setTimeout(r, 1000));
+  }
+  countdown.style.display = "none";
+  startRecording();
 }
 
 // 🎙️ بدء التسجيل
@@ -205,7 +233,7 @@ function stopRecording() {
   }
 }
 
-// 💾 حفظ التسجيل
+// 💾 حفظ التسجيل مؤقتًا
 async function saveRecording() {
   const blob = new Blob(audioChunks, { type: "audio/webm" });
   const url = URL.createObjectURL(blob);
@@ -215,7 +243,7 @@ async function saveRecording() {
   document.getElementById("uploadBtn").onclick = () => uploadRecording(blob);
 }
 
-// ☁️ رفع التسجيل إلى Supabase
+// ☁️ رفع التسجيل
 async function uploadRecording(blob) {
   const fileName = `speaker_${selectedSpeaker}_text_${currentTextId}_${Date.now()}.webm`;
   document.getElementById("uploadStatus").textContent = "⏳ جاري رفع التسجيل...";
@@ -228,7 +256,7 @@ async function uploadRecording(blob) {
   document.getElementById("uploadStatus").textContent = "✅ تم رفع التسجيل بنجاح!";
 }
 
-// 🎛️ تحليل الصوت
+// 🎛️ تحليل مستوى الصوت
 function visualizeVolume() {
   const dataArray = new Uint8Array(analyser.frequencyBinCount);
   function draw() {
@@ -245,7 +273,7 @@ function visualizeVolume() {
   draw();
 }
 
-document.getElementById("startBtn").addEventListener("click", startRecording);
+document.getElementById("startBtn").addEventListener("click", startCountdown);
 document.getElementById("stopBtn").addEventListener("click", stopRecording);
 </script>
 </body>
