@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>منصة "صوتنا" — تسجيل الصوت</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>منصة "صوتنا" لتسجيل الصوت</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -12,41 +12,35 @@
       color: #fff;
       background: #000 url('./background.png') no-repeat center/cover fixed;
     }
-
     .glass-box {
-      max-width: 1000px;
+      max-width: 900px;
       margin: 40px auto;
-      padding: 20px 40px;
+      padding: 25px;
       background: rgba(10, 15, 20, 0.8);
       border-radius: 20px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 0 30px rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
     }
-
     h1 {
       text-align: center;
       color: #2fffd4;
       margin-bottom: 5px;
     }
-
     p.subtitle {
       text-align: center;
       color: #aaa;
-      margin-top: 0;
+      margin-top: 5px;
+      margin-bottom: 20px;
     }
-
-    label { display: block; margin-top: 15px; color: #bde; font-weight: 600; }
-
+    label { display: block; margin-top: 15px; font-weight: 600; }
     select, input {
       width: 100%;
       padding: 10px;
-      background: rgba(255,255,255,0.07);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 8px;
-      margin-top: 5px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
     }
-
     .text-box {
       background: rgba(255,255,255,0.08);
       border-radius: 10px;
@@ -56,59 +50,41 @@
       margin: 20px 0;
       min-height: 60px;
     }
-
-    .buttons {
-      text-align: center;
-      margin-top: 10px;
-    }
-
+    .buttons { text-align: center; margin-top: 10px; }
     button {
-      background: linear-gradient(90deg,#2fffd4,#00b4d8);
       border: none;
-      padding: 10px 18px;
-      border-radius: 10px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+      background: linear-gradient(90deg, #2fffd4, #00b4d8);
       color: #000;
       font-weight: bold;
-      margin: 5px;
-      cursor: pointer;
       transition: 0.3s;
     }
-
-    button:hover { opacity: 0.9; }
-
+    button:hover { opacity: 0.85; }
     .note-box {
       background: rgba(255,255,255,0.05);
       border-radius: 10px;
       padding: 15px;
       margin-top: 20px;
-      line-height: 1.6;
       font-size: 0.95rem;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 25px;
       text-align: center;
-      font-size: 0.95rem;
+      margin-top: 20px;
     }
-
     th, td {
       border-bottom: 1px solid rgba(255,255,255,0.1);
-      padding: 8px;
+      padding: 10px;
     }
-
     th { color: #2fffd4; }
-    .ok { color: #0f0; }
-    .bad { color: #f55; }
-    .pending { color: #ffb400; }
-
-    footer {
-      text-align: center;
-      margin-top: 25px;
-      color: #888;
-      font-size: 0.85rem;
-    }
+    .ok { color: #00ff91; }
+    .bad { color: #ff5b5b; }
+    .pending { color: #ffc107; }
+    footer { text-align: center; margin-top: 25px; color: #999; font-size: 0.9rem; }
   </style>
 </head>
 
@@ -118,12 +94,12 @@
     <p class="subtitle">اقرأ النص بوضوح وبلُغتك السودانية</p>
 
     <label>اسم المتحدث:</label>
-    <select id="speakerName">
+    <select id="speakerSelect">
       <option value="">اختر المتحدث...</option>
       <option value="__new__">➕ إضافة متحدث جديد</option>
     </select>
-    <div id="newSpeakerDiv" style="display:none">
-      <input type="text" id="newSpeakerInput" placeholder="اكتب اسمك الكامل">
+    <div id="newSpeakerDiv" style="display:none;">
+      <input type="text" id="newSpeakerInput" placeholder="اكتب اسمك الكامل" />
     </div>
 
     <label>نوع الميكروفون:</label>
@@ -133,26 +109,26 @@
       <option value="laptop">💻 لابتوب</option>
     </select>
 
-    <div class="text-box" id="currText">⏳ جارِ تحميل النص...</div>
+    <div class="text-box" id="textBox">⏳ جارِ تحميل النصوص...</div>
 
     <div class="buttons">
-      <button id="prev">⏪ نص سابق</button>
-      <button id="skip">⏩ تخطّي النص</button>
-      <button id="recBtn">🎙️ ابدأ التسجيل</button>
+      <button id="prevBtn">⏪ نص سابق</button>
+      <button id="skipBtn">⏩ تخطّي النص</button>
+      <button id="recordBtn">🎙️ ابدأ التسجيل</button>
     </div>
 
-    <div id="recMsg" style="text-align:center;margin-top:10px;color:#8ff;"></div>
+    <p id="msg" style="text-align:center; color:#9ff; margin-top:8px;"></p>
 
     <div class="note-box">
       <strong>ملاحظات سريعة:</strong>
-      <ul style="margin:5px 20px;">
+      <ul>
         <li>لا تتوقف أثناء قراءة الجملة.</li>
         <li>أعد التسجيل إذا كان الصوت غير واضح.</li>
         <li>بعد الحفظ، ينتقل النظام تلقائيًا إلى النص التالي.</li>
       </ul>
     </div>
 
-    <h3 style="margin-top:30px;color:#2fffd4;text-align:center;">📊 إحصاءات المساهمين</h3>
+    <h3 style="color:#2fffd4;text-align:center;margin-top:30px;">📊 إحصاءات المساهمين</h3>
     <table>
       <thead>
         <tr>
@@ -162,10 +138,10 @@
           <th>الحالة الأبرز</th>
         </tr>
       </thead>
-      <tbody id="statsTable"></tbody>
+      <tbody id="statsBody"></tbody>
     </table>
 
-    <footer>Sawtna — Sudanese Voice Lab ©</footer>
+    <footer>Sawtna — Sudanese Voice Lab © 2025</footer>
   </div>
 
   <script type="module" src="./record.js"></script>
