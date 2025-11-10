@@ -31,4 +31,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if (pwd && btn) {
     pwd.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ btn.click(); } });
   }
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="script.js"></script>
+<script src="record.js"></script>
 });
