@@ -1,38 +1,56 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🎙️ تسجيل صوتي - صوتنا</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎙️ تسجيل الصوت - صوتنا</title>
 <style>
 body {
   font-family: 'Cairo', sans-serif;
-  background: linear-gradient(160deg, #0b0b0b, #111);
+  background: #0b0b0b;
   color: #fff;
   text-align: center;
   margin: 0;
-  padding: 40px 15px;
+  padding: 40px 10px;
 }
 .container {
-  max-width: 450px;
+  max-width: 600px;
   margin: auto;
-  background: #1a1a1a;
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 0 25px rgba(0,255,200,0.15);
+  background: #111;
+  padding: 30px;
+  border-radius: 18px;
+  box-shadow: 0 0 30px rgba(0,255,200,0.1);
 }
 h1 {
   color: #00e0b6;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+}
+p {
+  color: #ccc;
+}
+label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+  color: #eee;
+}
+input, select {
+  width: 90%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  margin-top: 8px;
+  background: #222;
+  color: #fff;
 }
 button {
-  padding: 12px 24px;
+  padding: 12px 25px;
   border: none;
-  border-radius: 10px;
-  cursor: pointer;
+  border-radius: 12px;
+  margin: 10px 8px;
   font-size: 16px;
-  margin: 10px 5px;
-  transition: 0.3s;
+  cursor: pointer;
+  transition: .3s;
 }
 #startBtn {
   background: linear-gradient(90deg,#00e0b6,#00b4d8);
@@ -42,7 +60,7 @@ button {
   background: #ff4d4d;
   color: #fff;
 }
-button:hover {
+#startBtn:hover, #stopBtn:hover {
   transform: scale(1.05);
 }
 audio {
@@ -53,15 +71,20 @@ audio {
   width: 100%;
   height: 10px;
   background: #222;
-  border-radius: 5px;
-  margin: 10px 0;
+  border-radius: 6px;
   overflow: hidden;
+  margin: 10px 0;
 }
 #volumeLevel {
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg,#00e0b6,#00b4d8);
-  transition: width 0.1s ease;
+  transition: width .1s ease;
+}
+.status {
+  margin-top: 15px;
+  font-size: 15px;
+  color: #aaa;
 }
 </style>
 </head>
@@ -70,37 +93,53 @@ audio {
   <h1>🎙️ تسجيل الصوت - صوتنا</h1>
   <p>اضغط "ابدأ التسجيل" وتحدث بوضوح قرب المايكروفون.</p>
 
+  <label>اسم المتحدث:</label>
+  <input type="text" id="speakerName" placeholder="اكتب اسمك هنا">
+
+  <label>النص المطلوب:</label>
+  <input type="text" id="textContent" placeholder="مثلاً: السلام عليكم يا جماعة.">
+
   <div id="volumeBar"><div id="volumeLevel"></div></div>
-  <p id="volumeStatus" style="font-size:14px;color:#ccc;">مستوى الصوت: جاهز</p>
+  <div class="status" id="volumeStatus">مستوى الصوت: جاهز</div>
 
   <button id="startBtn">▶️ ابدأ التسجيل</button>
   <button id="stopBtn" disabled>⏹️ أوقف التسجيل</button>
 
   <audio id="audioPlayer" controls style="display:none;"></audio>
+
+  <p id="uploadStatus"></p>
 </div>
 
-<script>
-let mediaRecorder;
-let audioChunks = [];
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
+
+const supabase = createClient(
+  "https://qcctqvmwwpsoiexgdqwp.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ"
+);
+const BUCKET = "recordings";
+
+let mediaRecorder, audioChunks = [];
 let audioContext, analyser, gainNode, source;
 let animationFrame;
 
 async function startRecording() {
+  const name = document.getElementById("speakerName").value.trim();
+  const text = document.getElementById("textContent").value.trim();
+  if (!name || !text) {
+    alert("يرجى إدخال اسم المتحدث والنص المطلوب قبل التسجيل.");
+    return;
+  }
+
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        noiseSuppression: true,
-        echoCancellation: true,
-        autoGainControl: true
-      }
+      audio: { noiseSuppression: true, echoCancellation: true, autoGainControl: true }
     });
 
     audioContext = new AudioContext();
     source = audioContext.createMediaStreamSource(stream);
-
     gainNode = audioContext.createGain();
-    gainNode.gain.value = 2.2; // تضخيم الصوت
-
+    gainNode.gain.value = 2.0; // تضخيم متوسط طبيعي
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
 
@@ -113,7 +152,7 @@ async function startRecording() {
     audioChunks = [];
 
     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-    mediaRecorder.onstop = saveRecording;
+    mediaRecorder.onstop = () => saveRecording(name, text);
 
     mediaRecorder.start();
     visualizeVolume();
@@ -121,8 +160,7 @@ async function startRecording() {
     document.getElementById("stopBtn").disabled = false;
     document.getElementById("volumeStatus").textContent = "🎙️ جاري التسجيل...";
   } catch (err) {
-    alert("⚠️ يرجى السماح بالوصول إلى المايكروفون.");
-    console.error(err);
+    alert("⚠️ لم يتم السماح بالوصول إلى المايكروفون.");
   }
 }
 
@@ -132,32 +170,36 @@ function stopRecording() {
     cancelAnimationFrame(animationFrame);
     document.getElementById("startBtn").disabled = false;
     document.getElementById("stopBtn").disabled = true;
-    document.getElementById("volumeStatus").textContent = "⏹️ تم إيقاف التسجيل.";
   }
 }
 
-function saveRecording() {
+async function saveRecording(name, text) {
   const blob = new Blob(audioChunks, { type: "audio/webm" });
+  const fileName = `${name}_${Date.now()}.webm`;
+  const filePath = `${fileName}`;
+
+  document.getElementById("uploadStatus").textContent = "⏳ جاري رفع التسجيل...";
+
+  const { error } = await supabase.storage.from(BUCKET).upload(filePath, blob);
+  if (error) {
+    alert("❌ فشل رفع الملف");
+    return;
+  }
+
+  await supabase.from("recordings").insert([
+    {
+      speaker_name: name,
+      text_content: text,
+      storage_path: filePath,
+      status: "pending"
+    }
+  ]);
+
   const url = URL.createObjectURL(blob);
   const player = document.getElementById("audioPlayer");
   player.src = url;
   player.style.display = "block";
-
-  // 🔊 تحليل الصوت النهائي
-  const reader = new FileReader();
-  reader.onload = function() {
-    const arrayBuffer = reader.result;
-    audioContext.decodeAudioData(arrayBuffer, (decoded) => {
-      const rms = Math.sqrt(decoded.getChannelData(0).reduce((sum, x) => sum + x*x, 0) / decoded.length);
-      if (rms < 0.01)
-        alert("🔈 الصوت منخفض جدًا، حاول الاقتراب من المايك.");
-      else if (rms > 0.2)
-        alert("📢 الصوت عالي جدًا، ابتعد قليلاً عن المايك.");
-      else
-        alert("✅ الصوت جيد للتدريب!");
-    });
-  };
-  reader.readAsArrayBuffer(blob);
+  document.getElementById("uploadStatus").textContent = "✅ تم رفع التسجيل بنجاح!";
 }
 
 function visualizeVolume() {
@@ -167,12 +209,10 @@ function visualizeVolume() {
     const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
     const volume = Math.min(100, (avg / 128) * 100);
     document.getElementById("volumeLevel").style.width = volume + "%";
-
     const status = document.getElementById("volumeStatus");
     if (volume < 20) status.textContent = "🔈 الصوت منخفض";
     else if (volume > 80) status.textContent = "📢 الصوت عالي جدًا";
     else status.textContent = "🎤 الصوت جيد";
-
     animationFrame = requestAnimationFrame(draw);
   }
   draw();
