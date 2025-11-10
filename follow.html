@@ -1,84 +1,23 @@
-
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>متابعة التسجيلات — صوتنا</title>
-  <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
-  <div class="container">
-    <header class="header">
-      <h1>متابعة التسجيلات 🎧</h1>
-      <p class="subtitle">اختر المتحدث أو اعرض الإجمالي.</p>
-    </header>
-
-    <section class="panel">
-      <div class="row">
-        <button class="btn" id="csv">تصدير النتائج إلى CSV ⬇️</button>
-        <select id="speaker" style="flex:1"></select>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="grid cols-2">
-        <div class="card"><h3>✅ مقبولة: <span id="ok">0</span></h3></div>
-        <div class="card"><h3>❌ مرفوضة: <span id="no">0</span></h3></div>
-      </div>
-      <div class="card"><h3>⏳ قيد المراجعة: <span id="pend">0</span></h3></div>
-    </section>
-  </div>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm';
-    import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
-    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const el=s=>document.querySelector(s);
-    const sel = el('#speaker');
-
-    async function loadSpeakers(){
-      const { data, error } = await sb.from('speakers').select('id,name').order('name');
-      if(error){ sel.innerHTML='<option>⚠️ خطأ</option>'; return; }
-      sel.innerHTML = '<option value="">كل المتحدثين</option>' + data.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-    }
-
-    async function loadStats(){
-      const filter = sel.value ? `eq.speaker_id.${sel.value}` : '';
-      // fetch all
-      let query = sb.from('recordings').select('status,speaker_id', { count:'exact' });
-      if(sel.value) query = query.eq('speaker_id', sel.value);
-      const { data, error } = await query;
-      if(error){ console.error(error); return; }
-      const ok = data.filter(r=>r.status==='approved').length;
-      const no = data.filter(r=>r.status==='rejected').length;
-      const pend = data.filter(r=>r.status!=='approved' && r.status!=='rejected').length;
-      el('#ok').textContent = ok;
-      el('#no').textContent = no;
-      el('#pend').textContent = pend;
-    }
-
-    sel.onchange = loadStats;
-
-    function toCSV(rows){
-      const head = ['speaker_id','status'];
-      const body = rows.map(r => [r.speaker_id, r.status]);
-      return [head, ...body].map(r=>r.join(',')).join('\n');
-    }
-
-    el('#csv').onclick = async () => {
-      let q = sb.from('recordings').select('speaker_id,status');
-      if(sel.value) q = q.eq('speaker_id', sel.value);
-      const { data } = await q;
-      const blob = new Blob([toCSV(data||[])], { type:'text/csv;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'recordings.csv';
-      a.click();
-    };
-
-    loadSpeakers().then(loadStats);
-  </script>
-</body>
-</html>
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>متابعة التسجيلات | صوتنا</title>
+<link rel="icon" href="./logo-full.png"><link rel="stylesheet" href="./styles.css">
+</head><body>
+<main class="container">
+  <div class="header"><h1 class="title">متابعة التسجيلات 🎧</h1>
+    <p class="subtitle">اختر اسمك لمعرفة حالة تسجيلاتك، أو اتركه فارغًا لعرض الجميع.</p></div>
+  <section class="card">
+    <div class="row" style="gap:12px">
+      <select id="speakerSelect" class="input" style="flex:1"><option value="">كل المتحدثين</option></select>
+      <button id="exportCsv" class="btn">⬇️ تصدير النتائج إلى CSV</button>
+    </div>
+    <div class="hr"></div>
+    <div id="stats" class="row" style="gap:10px">
+      <span class="badge ok">✅ مقبولة: <b id="okCnt">0</b></span>
+      <span class="badge danger">❌ مرفوضة: <b id="rejCnt">0</b></span>
+      <span class="badge warn">⏳ قيد المراجعة: <b id="penCnt">0</b></span>
+    </div>
+  </section>
+</main>
+<script type="module" src="./follow.js"></script>
+</body></html>

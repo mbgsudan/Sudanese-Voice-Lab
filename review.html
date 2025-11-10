@@ -1,79 +1,17 @@
-
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>لوحة المراجعة — صوتنا</title>
-  <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
-  <div class="container">
-    <header class="row" style="justify-content:space-between;align-items:center">
-      <h1 style="margin:0">لوحة مراجعة التسجيلات 🛠️</h1>
-      <div class="row">
-        <a class="btn btn-ghost" href="./index.html">🏠 الرئيسية</a>
-        <button class="btn btn-ghost" id="logout">🚪 خروج</button>
-      </div>
-    </header>
-    <hr />
-    <div id="list"></div>
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لوحة مراجعة التسجيلات | صوتنا</title>
+<link rel="icon" href="./logo-full.png"><link rel="stylesheet" href="./styles.css">
+</head><body>
+<main class="container">
+  <div class="header">
+    <h1 class="title">لوحة مراجعة التسجيلات 🛠️</h1>
+    <div class="row center" style="gap:10px">
+      <a class="btn ghost" href="./index.html">🏠 الرئيسية</a>
+      <button id="logout" class="btn danger">خروج 🚪</button>
+    </div>
   </div>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm';
-    import { SUPABASE_URL, SUPABASE_ANON_KEY, BUCKET, ADMIN_PASSWORD } from './config.js';
-    if(!localStorage.getItem('admin_auth')){ location.href='./admin.html'; }
-
-    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const list = document.getElementById('list');
-    document.getElementById('logout').onclick = ()=>{ localStorage.removeItem('admin_auth'); location.href='./'; };
-
-    async function loadAll(){
-      list.innerHTML = '<div class="small">⏳ جارِ التحميل…</div>';
-      const { data, error } = await sb
-        .from('recordings')
-        .select('id,status,storage_path,created_at, speakers(name,gender,age_range,accent), texts(content)')
-        .order('created_at', { ascending:false });
-      if(error){ list.innerHTML = '<div class="small">⚠️ فشل تحميل التسجيلات</div>'; return; }
-      list.innerHTML='';
-      for(const r of data){
-        const statusTag = r.status==='approved' ? '<span class="tag success">الحالة: approved</span>' :
-                          r.status==='rejected' ? '<span class="tag danger">الحالة: rejected</span>' :
-                          '<span class="tag warn">الحالة: pending</span>';
-        const url = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${r.storage_path}`;
-        const card = document.createElement('div');
-        card.className='card';
-        card.innerHTML = `
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <div><strong>${r.speakers?.name || 'مجهول'}</strong> — ${statusTag}</div>
-            <div class="small">${new Date(r.created_at).toLocaleString('ar-EG')}</div>
-          </div>
-          <div class="small" style="margin:6px 0 8px">🗣️ ${r.speakers?.accent || '-'} • 🎂 ${r.speakers?.age_range||'-'} • 👤 ${r.speakers?.gender||'-'}</div>
-          <div class="small">💬 النص: ${r.texts?.content || '-'}</div>
-          <div style="margin-top:10px"><audio controls src="${url}"></audio></div>
-          <div class="row" style="justify-content:flex-end;margin-top:10px">
-            <button class="btn btn-ghost" data-act="reject" data-id="${r.id}">❌ رفض</button>
-            <button class="btn" data-act="approve" data-id="${r.id}">✅ موافقة</button>
-          </div>
-        `;
-        list.appendChild(card);
-      }
-    }
-
-    async function update(id, status){
-      const { error } = await sb.from('recordings').update({ status }).eq('id', id);
-      if(error){ alert('فشل التحديث'); return; }
-      loadAll();
-    }
-
-    list.addEventListener('click', (e)=>{
-      const btn = e.target.closest('button[data-act]');
-      if(!btn) return;
-      update(btn.dataset.id, btn.dataset.act==='approve' ? 'approved' : 'rejected');
-    });
-
-    loadAll();
-  </script>
-</body>
-</html>
+  <div id="list" class="grid"></div>
+</main>
+<script type="module" src="./review.js"></script>
+</body></html>
