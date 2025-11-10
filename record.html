@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎙️ تسجيل الصوت - صوتنا</title>
+<title>🎙️ تسجيل الأصوات - منصة صوتنا</title>
 <style>
 body {
   font-family: 'Cairo', sans-serif;
@@ -14,58 +14,46 @@ body {
   padding: 40px 10px;
 }
 .container {
-  max-width: 600px;
+  max-width: 650px;
   margin: auto;
   background: #111;
   padding: 30px;
   border-radius: 18px;
-  box-shadow: 0 0 30px rgba(0,255,200,0.1);
+  box-shadow: 0 0 35px rgba(0,255,200,0.1);
+}
+.logo {
+  width: 80px;
+  margin-bottom: 15px;
 }
 h1 {
   color: #00e0b6;
-  margin-bottom: 10px;
 }
-p {
-  color: #ccc;
-}
-label {
-  display: block;
-  margin-top: 15px;
-  font-weight: bold;
-  color: #eee;
-}
-input, select {
-  width: 90%;
+p { color: #ccc; }
+select, input {
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: none;
-  margin-top: 8px;
-  background: #222;
-  color: #fff;
+  margin: 10px;
+  font-size: 16px;
 }
 button {
   padding: 12px 25px;
   border: none;
   border-radius: 12px;
-  margin: 10px 8px;
+  margin: 10px 5px;
   font-size: 16px;
   cursor: pointer;
-  transition: .3s;
+  transition: 0.3s;
 }
-#startBtn {
-  background: linear-gradient(90deg,#00e0b6,#00b4d8);
-  color: #fff;
-}
-#stopBtn {
-  background: #ff4d4d;
-  color: #fff;
-}
-#startBtn:hover, #stopBtn:hover {
-  transform: scale(1.05);
-}
-audio {
-  margin-top: 15px;
-  width: 100%;
+#startBtn { background: linear-gradient(90deg,#00e0b6,#00b4d8); color: #fff; }
+#stopBtn { background: #ff4d4d; color: #fff; }
+#uploadBtn { background: #666; color: #fff; }
+button:hover { transform: scale(1.05); }
+.text-box {
+  background: #1a1a1a;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 20px;
 }
 #volumeBar {
   width: 100%;
@@ -79,35 +67,40 @@ audio {
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg,#00e0b6,#00b4d8);
-  transition: width .1s ease;
+  transition: width 0.1s ease;
 }
-.status {
-  margin-top: 15px;
-  font-size: 15px;
-  color: #aaa;
-}
+.status { font-size: 15px; color: #aaa; margin-top: 10px; }
+.success { color: #00ff91; }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>🎙️ تسجيل الصوت - صوتنا</h1>
-  <p>اضغط "ابدأ التسجيل" وتحدث بوضوح قرب المايكروفون.</p>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Microphone_icon.svg/512px-Microphone_icon.svg.png" class="logo" alt="Mic" />
+  <h1>🎧 تسجيل الأصوات - منصة صوتنا</h1>
+  <p>نصيحة: اختر اسمك واضغط ابدأ التسجيل. سيظهر عدّ تنازلي مع تنبيه صوتي، ثم يبدأ التسجيل تلقائيًا.</p>
 
-  <label>اسم المتحدث:</label>
-  <input type="text" id="speakerName" placeholder="اكتب اسمك هنا">
+  <label>اختر اسمك:</label>
+  <select id="speakerSelect">
+    <option value="">-- اختر المتحدث --</option>
+  </select>
+  <p id="speakerStats">...</p>
 
-  <label>النص المطلوب:</label>
-  <input type="text" id="textContent" placeholder="مثلاً: السلام عليكم يا جماعة.">
+  <div class="text-box">
+    <h3 style="color:#00e0b6;">النص الحالي:</h3>
+    <p id="recordText" style="font-size:18px;color:#fff;">جارٍ تحميل النص...</p>
+    <p id="recordCount" style="color:#aaa;">...</p>
+  </div>
 
   <div id="volumeBar"><div id="volumeLevel"></div></div>
   <div class="status" id="volumeStatus">مستوى الصوت: جاهز</div>
 
-  <button id="startBtn">▶️ ابدأ التسجيل</button>
+  <button id="startBtn">✏️ ابدأ التسجيل</button>
   <button id="stopBtn" disabled>⏹️ أوقف التسجيل</button>
+  <button id="uploadBtn" disabled>⬆️ ارفع التسجيل</button>
 
-  <audio id="audioPlayer" controls style="display:none;"></audio>
+  <audio id="audioPlayer" controls style="display:none;margin-top:15px;"></audio>
 
-  <p id="uploadStatus"></p>
+  <p id="uploadStatus" class="success"></p>
 </div>
 
 <script type="module">
@@ -119,18 +112,57 @@ const supabase = createClient(
 );
 const BUCKET = "recordings";
 
+let speakers = [];
+let currentTextId = null;
+let selectedSpeaker = null;
 let mediaRecorder, audioChunks = [];
 let audioContext, analyser, gainNode, source;
 let animationFrame;
 
-async function startRecording() {
-  const name = document.getElementById("speakerName").value.trim();
-  const text = document.getElementById("textContent").value.trim();
-  if (!name || !text) {
-    alert("يرجى إدخال اسم المتحدث والنص المطلوب قبل التسجيل.");
+// 🧠 تحميل أسماء المتحدثين
+async function loadSpeakers() {
+  const { data, error } = await supabase.from("speakers").select("id, name");
+  if (error || !data) return alert("⚠️ فشل تحميل المتحدثين");
+  speakers = data;
+  const select = document.getElementById("speakerSelect");
+  data.forEach(sp => {
+    const opt = document.createElement("option");
+    opt.value = sp.id;
+    opt.textContent = sp.name;
+    select.appendChild(opt);
+  });
+}
+loadSpeakers();
+
+// 🧠 عند اختيار متحدث
+document.getElementById("speakerSelect").addEventListener("change", async (e) => {
+  const id = e.target.value;
+  if (!id) return;
+  selectedSpeaker = id;
+  const { data: recs } = await supabase.from("recordings").select("id").eq("speaker_id", id);
+  document.getElementById("speakerStats").innerHTML =
+    `🎤 لقد سجلت <b>${recs?.length || 0}</b> ملفًا بصوتك حتى الآن.`;
+  loadNewText();
+});
+
+// 📜 جلب نص جديد (غير مسجل مسبقًا)
+async function loadNewText() {
+  const { data, error } = await supabase.from("texts").select("id, content").limit(1);
+  if (error || !data.length) {
+    document.getElementById("recordText").textContent = "لا توجد نصوص متاحة حاليًا.";
     return;
   }
+  currentTextId = data[0].id;
+  document.getElementById("recordText").textContent = data[0].content;
+  document.getElementById("recordCount").textContent = "سجل 0 من أصل 5 مرات.";
+}
 
+// 🎙️ بدء التسجيل
+async function startRecording() {
+  if (!selectedSpeaker || !currentTextId) {
+    alert("يرجى اختيار المتحدث أولًا.");
+    return;
+  }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: { noiseSuppression: true, echoCancellation: true, autoGainControl: true }
@@ -139,7 +171,7 @@ async function startRecording() {
     audioContext = new AudioContext();
     source = audioContext.createMediaStreamSource(stream);
     gainNode = audioContext.createGain();
-    gainNode.gain.value = 2.0; // تضخيم متوسط طبيعي
+    gainNode.gain.value = 2.0;
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
 
@@ -150,9 +182,8 @@ async function startRecording() {
 
     mediaRecorder = new MediaRecorder(destination.stream);
     audioChunks = [];
-
     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-    mediaRecorder.onstop = () => saveRecording(name, text);
+    mediaRecorder.onstop = saveRecording;
 
     mediaRecorder.start();
     visualizeVolume();
@@ -168,40 +199,36 @@ function stopRecording() {
   if (mediaRecorder && mediaRecorder.state !== "inactive") {
     mediaRecorder.stop();
     cancelAnimationFrame(animationFrame);
-    document.getElementById("startBtn").disabled = false;
     document.getElementById("stopBtn").disabled = true;
+    document.getElementById("uploadBtn").disabled = false;
+    document.getElementById("volumeStatus").textContent = "⏹️ تم إيقاف التسجيل.";
   }
 }
 
-async function saveRecording(name, text) {
+// 💾 حفظ التسجيل
+async function saveRecording() {
   const blob = new Blob(audioChunks, { type: "audio/webm" });
-  const fileName = `${name}_${Date.now()}.webm`;
-  const filePath = `${fileName}`;
-
-  document.getElementById("uploadStatus").textContent = "⏳ جاري رفع التسجيل...";
-
-  const { error } = await supabase.storage.from(BUCKET).upload(filePath, blob);
-  if (error) {
-    alert("❌ فشل رفع الملف");
-    return;
-  }
-
-  await supabase.from("recordings").insert([
-    {
-      speaker_name: name,
-      text_content: text,
-      storage_path: filePath,
-      status: "pending"
-    }
-  ]);
-
   const url = URL.createObjectURL(blob);
   const player = document.getElementById("audioPlayer");
   player.src = url;
   player.style.display = "block";
+  document.getElementById("uploadBtn").onclick = () => uploadRecording(blob);
+}
+
+// ☁️ رفع التسجيل إلى Supabase
+async function uploadRecording(blob) {
+  const fileName = `speaker_${selectedSpeaker}_text_${currentTextId}_${Date.now()}.webm`;
+  document.getElementById("uploadStatus").textContent = "⏳ جاري رفع التسجيل...";
+  const { error } = await supabase.storage.from(BUCKET).upload(fileName, blob);
+  if (error) return alert("❌ فشل رفع الملف الصوتي");
+
+  await supabase.from("recordings").insert([
+    { speaker_id: selectedSpeaker, text_id: currentTextId, storage_path: fileName, status: "pending" }
+  ]);
   document.getElementById("uploadStatus").textContent = "✅ تم رفع التسجيل بنجاح!";
 }
 
+// 🎛️ تحليل الصوت
 function visualizeVolume() {
   const dataArray = new Uint8Array(analyser.frequencyBinCount);
   function draw() {
