@@ -6,108 +6,143 @@
 <title>🛠️ لوحة مراجعة التسجيلات - صوتنا</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
 <style>
-  body {
-    font-family: "Cairo", sans-serif;
-    background: #0b0b0b;
-    color: #fff;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-  }
-  .container {
-    max-width: 1000px;
-    margin: 40px auto;
-    background: #111;
-    padding: 25px;
-    border-radius: 20px;
-    box-shadow: 0 0 30px rgba(0, 224, 198, 0.2);
-  }
-  h1 {
-    color: #00e0b6;
-    margin-bottom: 20px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-  }
-  th, td {
-    padding: 10px;
-    border-bottom: 1px solid #333;
-    text-align: center;
-  }
-  th {
-    background: #0f1314;
-    color: #00e0c6;
-  }
-  tr:hover {
-    background: rgba(0, 224, 198, 0.05);
-  }
-  button {
-    border: none;
-    border-radius: 8px;
-    padding: 8px 14px;
-    color: #fff;
-    cursor: pointer;
-    font-size: 14px;
-    transition: 0.2s;
-  }
-  .approve {
-    background: #00b951;
-  }
-  .reject {
-    background: #ff4d4d;
-  }
-  .approve:hover {
-    background: #00d06f;
-  }
-  .reject:hover {
-    background: #ff6666;
-  }
-  .addSpeaker {
-    background: #00e0b6;
-    padding: 10px 18px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-  .logout {
-    background: #ff4444;
-    padding: 10px 18px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-  input, select {
-    padding: 8px;
-    margin: 4px;
-    border-radius: 6px;
-    border: none;
-    width: 90%;
-    background: #0f1314;
-    color: #fff;
-  }
-  #addSpeakerBox {
-    background: #0f1314;
-    border: 1px solid #00e0b6;
-    padding: 15px;
-    border-radius: 12px;
-    margin: 10px auto;
-    width: 90%;
-  }
-  #statusMsg {
-    margin-top: 10px;
-    color: #00e0b6;
-  }
+body {
+  font-family: "Cairo", sans-serif;
+  background: radial-gradient(circle at top, #0d1b1e, #000);
+  color: #fff;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 1050px;
+  margin: 20px auto;
+  padding: 20px;
+}
+h1 {
+  text-align: center;
+  color: #00e0b6;
+  margin-bottom: 25px;
+  text-shadow: 0 0 15px rgba(0, 224, 198, 0.3);
+}
+.topbar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.add {
+  background: linear-gradient(90deg, #00e0b6, #00b4d8);
+  color: #fff;
+}
+.logout {
+  background: #ff4d4d;
+  color: #fff;
+}
+.add:hover { opacity: 0.9; }
+.logout:hover { background: #ff6666; }
+
+#addSpeakerBox {
+  background: #0f1518;
+  border: 1px solid #00e0b6;
+  border-radius: 14px;
+  padding: 15px;
+  margin-bottom: 20px;
+  display: none;
+  max-width: 550px;
+  margin-inline: auto;
+}
+#addSpeakerBox input, #addSpeakerBox select {
+  width: 100%;
+  margin: 6px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: #0c0f10;
+  color: #fff;
+}
+.card {
+  background: #0f1314;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  transition: transform .2s ease;
+}
+.card:hover { transform: translateY(-3px); }
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.card-header h3 {
+  margin: 0;
+  color: #00e0b6;
+}
+.info {
+  font-size: 14px;
+  color: #a9b2b3;
+  margin-bottom: 8px;
+  line-height: 1.8;
+}
+.audioBox {
+  margin: 10px 0;
+  background: #1a1f21;
+  border-radius: 10px;
+  padding: 10px;
+}
+.status {
+  font-size: 14px;
+  color: #bbb;
+}
+.status.pending { color: #ffb347; }
+.status.approved { color: #4caf50; }
+.status.rejected { color: #ff4d4d; }
+
+.btns {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+.approve {
+  background: #00c46b;
+  color: #fff;
+}
+.reject {
+  background: #e63946;
+  color: #fff;
+}
+.approve:hover { background: #00e67a; }
+.reject:hover { background: #ff5c5c; }
+#statusMsg {
+  text-align: center;
+  margin-top: 10px;
+  color: #00e0b6;
+}
+audio {
+  width: 100%;
+  border-radius: 8px;
+}
 </style>
 </head>
 <body>
   <div class="container">
     <h1>🛠️ لوحة مراجعة التسجيلات</h1>
-    <button class="addSpeaker" onclick="toggleAddSpeaker()">➕ إضافة متحدث جديد</button>
-    <button class="logout" onclick="logout()">🚪 خروج</button>
+    <div class="topbar">
+      <button class="btn add" onclick="toggleAddSpeaker()">➕ إضافة متحدث جديد</button>
+      <button class="btn logout" onclick="logout()">🚪 خروج</button>
+    </div>
 
-    <div id="addSpeakerBox" style="display:none;">
+    <div id="addSpeakerBox">
       <h3>إضافة متحدث جديد</h3>
       <input id="spk_name" type="text" placeholder="اسم المتحدث">
       <select id="spk_gender">
@@ -117,127 +152,119 @@
       </select>
       <select id="spk_age">
         <option value="">الفئة العمرية</option>
-        <option value="20-30">20-30</option>
-        <option value="30-40">30-40</option>
-        <option value="40-50">40-50</option>
+        <option value="18-25">18-25</option>
+        <option value="25-35">25-35</option>
+        <option value="35-45">35-45</option>
       </select>
       <select id="spk_accent">
         <option value="">اللهجة</option>
-        <option value="لهجة الخرطوم">لهجة الخرطوم</option>
-        <option value="لهجة وسط السودان">لهجة وسط السودان</option>
-        <option value="لهجة شرق السودان">لهجة شرق السودان</option>
-        <option value="لهجة غرب السودان">لهجة غرب السودان</option>
+        <option value="الخرطوم">الخرطوم</option>
+        <option value="وسط السودان">وسط السودان</option>
+        <option value="شرق السودان">شرق السودان</option>
+        <option value="غرب السودان">غرب السودان</option>
       </select><br>
-      <button class="addSpeaker" onclick="addSpeaker()">حفظ</button>
+      <button class="btn add" onclick="addSpeaker()">💾 حفظ</button>
       <p id="statusMsg"></p>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>المتحدث</th>
-          <th>الجنس</th>
-          <th>العمر</th>
-          <th>اللهجة</th>
-          <th>النص</th>
-          <th>الصوت</th>
-          <th>الحالة</th>
-          <th>إجراء</th>
-        </tr>
-      </thead>
-      <tbody id="recordsTable">
-        <tr><td colspan="8">جارِ التحميل...</td></tr>
-      </tbody>
-    </table>
+    <div id="recordsContainer">⏳ جارِ تحميل التسجيلات...</div>
   </div>
 
 <script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
-  const supabase = createClient(
-    "https://qcctqvmwwpsoiexgdqwp.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ"
-  );
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
+const supabase = createClient(
+  "https://qcctqvmwwpsoiexgdqwp.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ"
+);
 
-  const BUCKET = "recordings";
-  const tableBody = document.getElementById("recordsTable");
-  const statusMsg = document.getElementById("statusMsg");
+const BUCKET = "recordings";
+const container = document.getElementById("recordsContainer");
+const statusMsg = document.getElementById("statusMsg");
 
-  // تحميل التسجيلات
-  async function loadRecords() {
-    tableBody.innerHTML = "<tr><td colspan='8'>⏳ جارِ التحميل...</td></tr>";
-    const { data, error } = await supabase
-      .from("recordings")
-      .select(`id, status, storage_path, speakers(name, gender, age_range, accent), texts(content)`)
-      .order("created_at", { ascending: false });
+// تحميل التسجيلات
+async function loadRecords() {
+  container.innerHTML = "⏳ جارِ التحميل...";
+  const { data, error } = await supabase
+    .from("recordings")
+    .select(`id, status, storage_path, speakers(name, gender, age_range, accent), texts(content)`)
+    .order("created_at", { ascending: false });
 
-    if (error) {
-      tableBody.innerHTML = "<tr><td colspan='8'>⚠️ فشل تحميل التسجيلات</td></tr>";
-      return;
-    }
-    if (!data.length) {
-      tableBody.innerHTML = "<tr><td colspan='8'>لا توجد تسجيلات بعد.</td></tr>";
-      return;
-    }
-
-    tableBody.innerHTML = "";
-    for (const r of data) {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${r.speakers?.name || "-"}</td>
-        <td>${r.speakers?.gender || "-"}</td>
-        <td>${r.speakers?.age_range || "-"}</td>
-        <td>${r.speakers?.accent || "-"}</td>
-        <td>${r.texts?.content || "-"}</td>
-        <td><audio controls src="https://qcctqvmwwpsoiexgdqwp.supabase.co/storage/v1/object/public/${BUCKET}/${r.storage_path}"></audio></td>
-        <td>${r.status}</td>
-        <td>
-          <button class="approve" onclick="updateStatus(${r.id}, 'approved')">✅ موافقة</button>
-          <button class="reject" onclick="updateStatus(${r.id}, 'rejected')">❌ رفض</button>
-        </td>
-      `;
-      tableBody.appendChild(row);
-    }
+  if (error) {
+    container.innerHTML = "<p>⚠️ فشل تحميل التسجيلات.</p>";
+    return;
   }
 
-  // تحديث الحالة
-  window.updateStatus = async function (id, status) {
-    const { error } = await supabase.from("recordings").update({ status }).eq("id", id);
-    if (error) alert("⚠️ فشل تحديث الحالة");
-    else loadRecords();
-  };
+  if (!data.length) {
+    container.innerHTML = "<p>لا توجد تسجيلات حالياً.</p>";
+    return;
+  }
 
-  // إظهار/إخفاء إضافة المتحدث
-  window.toggleAddSpeaker = function () {
-    const box = document.getElementById("addSpeakerBox");
-    box.style.display = box.style.display === "none" ? "block" : "none";
-  };
+  container.innerHTML = "";
+  for (const r of data) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-header">
+        <h3>${r.speakers?.name || "مجهول"}</h3>
+        <span class="status ${r.status}">الحالة: ${r.status}</span>
+      </div>
+      <div class="info">
+        👤 الجنس: ${r.speakers?.gender || "-"} |
+        🎂 العمر: ${r.speakers?.age_range || "-"} |
+        🗣️ اللهجة: ${r.speakers?.accent || "-"}
+      </div>
+      <div class="info">💬 النص: ${r.texts?.content || "-"}</div>
+      <div class="audioBox">
+        <audio controls src="https://qcctqvmwwpsoiexgdqwp.supabase.co/storage/v1/object/public/${BUCKET}/${r.storage_path}"></audio>
+      </div>
+      <div class="btns">
+        <button class="btn approve" onclick="updateStatus(${r.id}, 'approved')">✅ موافقة</button>
+        <button class="btn reject" onclick="updateStatus(${r.id}, 'rejected')">❌ رفض</button>
+      </div>
+    `;
+    container.appendChild(card);
+  }
+}
 
-  // إضافة متحدث جديد
-  window.addSpeaker = async function () {
-    const name = document.getElementById("spk_name").value.trim();
-    const gender = document.getElementById("spk_gender").value;
-    const age = document.getElementById("spk_age").value;
-    const accent = document.getElementById("spk_accent").value;
+// تحديث الحالة
+window.updateStatus = async function (id, status) {
+  const { error } = await supabase.from("recordings").update({ status }).eq("id", id);
+  if (error) alert("❌ فشل تحديث الحالة");
+  else loadRecords();
+};
 
-    if (!name || !gender || !age || !accent) {
-      statusMsg.textContent = "⚠️ يرجى تعبئة كل الحقول";
-      return;
-    }
+// إضافة متحدث
+window.addSpeaker = async function () {
+  const name = document.getElementById("spk_name").value.trim();
+  const gender = document.getElementById("spk_gender").value;
+  const age = document.getElementById("spk_age").value;
+  const accent = document.getElementById("spk_accent").value;
 
-    const { error } = await supabase.from("speakers").insert([{ name, gender, age_range: age, accent }]);
-    if (error) statusMsg.textContent = "❌ فشل في الإضافة";
-    else {
-      statusMsg.textContent = "✅ تمت الإضافة بنجاح";
-      document.getElementById("addSpeakerBox").style.display = "none";
-      loadRecords();
-    }
-  };
+  if (!name || !gender || !age || !accent) {
+    statusMsg.textContent = "⚠️ يرجى تعبئة جميع الحقول";
+    return;
+  }
 
-  window.logout = function () {
-    location.href = "/";
-  };
+  const { error } = await supabase.from("speakers").insert([{ name, gender, age_range: age, accent }]);
+  if (error) statusMsg.textContent = "❌ فشل الإضافة";
+  else {
+    statusMsg.textContent = "✅ تمت الإضافة بنجاح";
+    document.getElementById("addSpeakerBox").style.display = "none";
+    loadRecords();
+  }
+};
 
-  loadRecords();
+// عرض/إخفاء نموذج الإضافة
+window.toggleAddSpeaker = function () {
+  const box = document.getElementById("addSpeakerBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+};
+
+window.logout = function () {
+  location.href = "/";
+};
+
+loadRecords();
 </script>
 </body>
 </html>
