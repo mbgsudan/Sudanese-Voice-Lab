@@ -1,75 +1,79 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة مراجعة التسجيلات | صوتنا</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="config.js"></script>
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-    const supabase = createClient(window.SAWTNA.SUPABASE_URL, window.SAWTNA.SUPABASE_ANON);
-    if(!localStorage.getItem('admin_auth')) location.replace('admin.html');
-
-    document.addEventListener('DOMContentLoaded', load);
-    async function load(){
-      const list = document.getElementById('list');
-      list.innerHTML = '<div class="meta">⏳ جارِ التحميل...</div>';
-      const { data, error } = await supabase
-        .from('recordings')
-        .select(`id, status, storage_path, created_at, speakers(name, gender, age_range, accent), texts(content)`)
-        .order('created_at', { ascending:false });
-      if(error){ list.innerHTML = `<p class="msg-error">فشل التحميل</p>`; return; }
-      if(!data.length){ list.innerHTML = `<p class="meta">لا توجد تسجيلات بعد.</p>`; return; }
-
-      list.innerHTML = '';
-      for(const r of data){
-        const name = r.speakers?.name ?? 'مجهول';
-        const gender = r.speakers?.gender ?? '—';
-        const age = r.speakers?.age_range ?? '—';
-        const accent = r.speakers?.accent ?? '—';
-        const text = r.texts?.content ?? '—';
-        const badge = r.status === 'approved' ? 'ok' : r.status === 'rejected' ? 'reject' : 'pending';
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.innerHTML = `
-          <div class="row" style="justify-content:space-between">
-            <strong>${name}</strong>
-            <span class="badge ${badge}">الحالة: ${r.status}</span>
-          </div>
-          <div class="meta">👤 ${gender} | 🎂 ${age} | 🗣️ ${accent}</div>
-          <div class="meta">💬 ${text}</div>
-          <div class="hr"></div>
-          <audio controls src="${window.SAWTNA.SUPABASE_URL}/storage/v1/object/public/${window.SAWTNA.BUCKET}/${r.storage_path}"></audio>
-          <div class="row" style="margin-top:10px">
-            <button class="btn" style="background:#32d399;color:#001a12" data-act="approved">✅ موافقة</button>
-            <button class="btn danger" data-act="rejected">❌ رفض</button>
-          </div>
-        `;
-        div.querySelectorAll('button').forEach(b => {
-          b.onclick = async () => {
-            const status = b.dataset.act;
-            const { error } = await supabase.from('recordings').update({ status }).eq('id', r.id);
-            if(error) return alert('فشل التحديث');
-            div.querySelector('.badge').textContent = `الحالة: ${status}`;
-            div.querySelector('.badge').className = 'badge ' + (status==='approved'?'ok':status==='rejected'?'reject':'pending');
-          };
-        });
-        list.appendChild(div);
-      }
-    }
-
-    window.logout = ()=>{ localStorage.removeItem('admin_auth'); location.href = 'admin.html'; };
-  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لوحة المراجعة — صوتنا</title>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <div class="container">
-    <h1>🛠️ لوحة مراجعة التسجيلات</h1>
-    <header class="nav">
-      <a href="index.html" class="link">الرئيسية 🏠</a>
-      <button class="btn danger" onclick="logout()">خروج 🚪</button>
+    <header class="row" style="justify-content:space-between;align-items:center">
+      <h1 style="margin:0">لوحة مراجعة التسجيلات 🛠️</h1>
+      <div class="row">
+        <a class="btn btn-ghost" href="./index.html">🏠 الرئيسية</a>
+        <button class="btn btn-ghost" id="logout">🚪 خروج</button>
+      </div>
     </header>
+    <hr />
     <div id="list"></div>
   </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm';
+    import { SUPABASE_URL, SUPABASE_ANON_KEY, BUCKET, ADMIN_PASSWORD } from './config.js';
+    if(!localStorage.getItem('admin_auth')){ location.href='./admin.html'; }
+
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const list = document.getElementById('list');
+    document.getElementById('logout').onclick = ()=>{ localStorage.removeItem('admin_auth'); location.href='./'; };
+
+    async function loadAll(){
+      list.innerHTML = '<div class="small">⏳ جارِ التحميل…</div>';
+      const { data, error } = await sb
+        .from('recordings')
+        .select('id,status,storage_path,created_at, speakers(name,gender,age_range,accent), texts(content)')
+        .order('created_at', { ascending:false });
+      if(error){ list.innerHTML = '<div class="small">⚠️ فشل تحميل التسجيلات</div>'; return; }
+      list.innerHTML='';
+      for(const r of data){
+        const statusTag = r.status==='approved' ? '<span class="tag success">الحالة: approved</span>' :
+                          r.status==='rejected' ? '<span class="tag danger">الحالة: rejected</span>' :
+                          '<span class="tag warn">الحالة: pending</span>';
+        const url = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${r.storage_path}`;
+        const card = document.createElement('div');
+        card.className='card';
+        card.innerHTML = `
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <div><strong>${r.speakers?.name || 'مجهول'}</strong> — ${statusTag}</div>
+            <div class="small">${new Date(r.created_at).toLocaleString('ar-EG')}</div>
+          </div>
+          <div class="small" style="margin:6px 0 8px">🗣️ ${r.speakers?.accent || '-'} • 🎂 ${r.speakers?.age_range||'-'} • 👤 ${r.speakers?.gender||'-'}</div>
+          <div class="small">💬 النص: ${r.texts?.content || '-'}</div>
+          <div style="margin-top:10px"><audio controls src="${url}"></audio></div>
+          <div class="row" style="justify-content:flex-end;margin-top:10px">
+            <button class="btn btn-ghost" data-act="reject" data-id="${r.id}">❌ رفض</button>
+            <button class="btn" data-act="approve" data-id="${r.id}">✅ موافقة</button>
+          </div>
+        `;
+        list.appendChild(card);
+      }
+    }
+
+    async function update(id, status){
+      const { error } = await sb.from('recordings').update({ status }).eq('id', id);
+      if(error){ alert('فشل التحديث'); return; }
+      loadAll();
+    }
+
+    list.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-act]');
+      if(!btn) return;
+      update(btn.dataset.id, btn.dataset.act==='approve' ? 'approved' : 'rejected');
+    });
+
+    loadAll();
+  </script>
 </body>
 </html>
