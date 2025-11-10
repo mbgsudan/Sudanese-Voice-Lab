@@ -1,3 +1,7 @@
+if (!localStorage.getItem("admin_auth")) {
+  alert("يجب تسجيل الدخول أولاً 🔐");
+  window.location.href = "admin.html"; // أو login.html لو غيرت الاسم
+}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
