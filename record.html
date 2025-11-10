@@ -1,10 +1,9 @@
-
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>صوتنا – التسجيل الصوتي</title>
+  <title>🎙️ صوتنا – التسجيل الصوتي</title>
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
@@ -12,7 +11,7 @@
     <header>
       <img src="logo-full.png" class="logo" alt="صوتنا"/>
       <h2>🎧 التسجيل الصوتي</h2>
-      <p class="sub">اختر اسمك والنص، ثم سجّل وارفع التسجيل.</p>
+      <p class="sub">اختر اسمك، اقرأ الجملة، ثم سجّل وارفع المقطع.</p>
     </header>
 
     <div class="panel">
@@ -22,22 +21,13 @@
           <select id="speaker"></select>
         </div>
         <div class="field">
-          <label>الجملة</label>
+          <label>النص المطلوب</label>
           <select id="textSel"></select>
         </div>
       </div>
-      <div class="grid">
-        <div class="field">
-          <label>جلسة التسجيل</label>
-          <input id="sessionId" placeholder="S-YYYY-MM-DD-A"/>
-        </div>
-        <div class="field">
-          <label>نوع الميكروفون</label>
-          <input id="micType" value="USB"/>
-        </div>
-      </div>
-      <div class="separator"></div>
+
       <p id="currentText" class="notice"></p>
+
       <div class="grid">
         <button id="start" class="btn">ابدأ التسجيل</button>
         <button id="stop" class="btn-ghost" disabled>إيقاف</button>
@@ -50,53 +40,108 @@
       <p id="msg" class="notice"></p>
     </div>
 
+    <div class="panel" id="adminPanel" style="display:none">
+      <h3>👤 إضافة متحدث جديد</h3>
+      <div class="grid">
+        <div class="field">
+          <label>الاسم الكامل</label>
+          <input id="newName" placeholder="اسم المتحدث"/>
+        </div>
+        <div class="field">
+          <label>الجنس</label>
+          <select id="newGender">
+            <option value="غير محدد">غير محدد</option>
+            <option value="ذكر">ذكر</option>
+            <option value="أنثى">أنثى</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>العمر (اختياري)</label>
+          <input id="newAge" type="number" min="5" max="100"/>
+        </div>
+      </div>
+      <button id="addSpeaker" class="btn">➕ إضافة المتحدث</button>
+      <p id="addMsg" class="notice"></p>
+    </div>
+
     <div class="footer">تم التطوير بواسطة محمد بابكر وفريق صوتنا 2025 ✨</div>
   </div>
 
   <script type="module">
-    import { supabase, BUCKET } from './config.js';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm';
+
+    const SUPABASE_URL = "https://qcctqvmwwpsoiexgdqwp.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const BUCKET = "recordings";
+
     const $ = (s)=>document.querySelector(s);
-    const speakerSel=$('#speaker'), textSel=$('#textSel'), sessionId=$('#sessionId'), micType=$('#micType'), currentText=$('#currentText');
-    const startBtn=$('#start'), stopBtn=$('#stop'), uploadBtn=$('#upload'), resetBtn=$('#reset'), player=$('#player'), msg=$('#msg');
+    const speakerSel=$('#speaker'), textSel=$('#textSel'), currentText=$('#currentText');
+    const startBtn=$('#start'), stopBtn=$('#stop'), uploadBtn=$('#upload'), resetBtn=$('#reset');
+    const player=$('#player'), msg=$('#msg');
+    const adminPanel=$('#adminPanel'), addSpeaker=$('#addSpeaker'), addMsg=$('#addMsg');
 
-    async function preload(){
-      const sp=await supabase.from('speakers').select('id,code,name').order('code');
-      speakerSel.innerHTML=(sp.data||[]).map(s=>`<option value="${s.id}">${s.code} — ${s.name||''}</option>`).join('');
-      const tx=await supabase.from('texts').select('id,code,content').order('code');
-      textSel.innerHTML=(tx.data||[]).map(t=>`<option value="${t.id}" data-content="${encodeURIComponent(t.content)}">${t.code}</option>`).join('');
-      if(tx.data&&tx.data[0]) currentText.textContent=decodeURIComponent(textSel.options[0].dataset.content);
-      const d=new Date().toISOString().slice(0,10); sessionId.value=`S-${d}-A`;
+    // 🔐 إظهار لوحة المشرف
+    const pw = prompt('أدخل كلمة مرور المشرف أو اضغط إلغاء للاستمرار كمستخدم عادي:');
+    if(pw === '70003mbgz'){ adminPanel.style.display='block'; }
+
+    // 📥 تحميل المتحدثين والنصوص
+    async function loadSpeakers(){
+      const { data } = await supabase.from('speakers').select('id,code,name').order('code');
+      speakerSel.innerHTML = (data||[]).map(s=>`<option value="${s.id}">${s.code} — ${s.name}</option>`).join('');
     }
-    textSel.addEventListener('change',()=>{ const opt=textSel.options[textSel.selectedIndex]; currentText.textContent=decodeURIComponent(opt.dataset.content||'');});
-    preload();
+    async function loadTexts(){
+      const { data } = await supabase.from('texts').select('id,code,content').eq('status','available').order('record_count',{ascending:true});
+      textSel.innerHTML = (data||[]).map(t=>`<option value="${t.id}" data-content="${encodeURIComponent(t.content)}">${t.code}</option>`).join('');
+      if(data?.length) currentText.textContent = decodeURIComponent(textSel.options[0].dataset.content);
+    }
+    textSel.addEventListener('change',()=>{ currentText.textContent = decodeURIComponent(textSel.options[textSel.selectedIndex].dataset.content); });
+    await loadSpeakers(); await loadTexts();
 
+    // 🎤 التسجيل الصوتي
     let mediaRecorder, chunks=[];
     startBtn.onclick=async()=>{
-      try{
-        const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-        mediaRecorder=new MediaRecorder(stream,{mimeType:'audio/webm'}); chunks=[];
-        mediaRecorder.ondataavailable=e=>chunks.push(e.data);
-        mediaRecorder.onstop=()=>{ const blob=new Blob(chunks,{type:'audio/webm'}); player.src=URL.createObjectURL(blob); uploadBtn.disabled=false; resetBtn.disabled=false; };
-        mediaRecorder.start(); startBtn.disabled=true; stopBtn.disabled=false; msg.textContent='جارٍ التسجيل...';
-      }catch(e){ msg.textContent='لم يتم الوصول للميكروفون.'; }
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      mediaRecorder=new MediaRecorder(stream);
+      chunks=[]; mediaRecorder.ondataavailable=e=>chunks.push(e.data);
+      mediaRecorder.onstop=()=>{ const blob=new Blob(chunks,{type:'audio/webm'}); player.src=URL.createObjectURL(blob); uploadBtn.disabled=false; resetBtn.disabled=false; };
+      mediaRecorder.start(); startBtn.disabled=true; stopBtn.disabled=false; msg.textContent='جارٍ التسجيل...';
     };
-    stopBtn.onclick=()=>{ mediaRecorder?.stop(); startBtn.disabled=false; stopBtn.disabled=true; msg.textContent='تم إيقاف التسجيل.'; };
+    stopBtn.onclick=()=>{ mediaRecorder?.stop(); startBtn.disabled=false; stopBtn.disabled=true; msg.textContent='تم الإيقاف.'; };
     resetBtn.onclick=()=>{ player.removeAttribute('src'); uploadBtn.disabled=true; resetBtn.disabled=true; };
 
+    // 📤 رفع التسجيل
     uploadBtn.onclick=async()=>{
-      msg.textContent='رفع التسجيل...';
+      msg.textContent='جارٍ رفع التسجيل...';
       const blob=new Blob(chunks,{type:'audio/webm'});
-      const spId=speakerSel.value, txId=textSel.value; if(!spId||!txId){ msg.textContent='اختر المتحدث والنص أولاً.'; return; }
-      const sp=await supabase.from('speakers').select('code,name').eq('id',spId).maybeSingle();
-      const tx=await supabase.from('texts').select('code,content').eq('id',txId).maybeSingle();
-      const spCode=sp.data?.code||'SPK', txCode=tx.data?.code||'TXT'; const ts=new Date().toISOString().replace(/[:.]/g,'-');
-      const fileName=`${spCode}_${txCode}_T1_${ts}.webm`; const path=`${spCode}/${sessionId.value}/${fileName}`;
+      const spId=speakerSel.value, txId=textSel.value;
+      const ts=new Date().toISOString().replace(/[:.]/g,'-');
+      const fileName=`${spId}_${txId}_${ts}.webm`; const path=`${spId}/${fileName}`;
+      const up=await supabase.storage.from(BUCKET).upload(path, blob, {contentType:'audio/webm'});
+      if(up.error){ msg.textContent='فشل في رفع الملف: '+up.error.message; return; }
 
-      const up=await supabase.storage.from(BUCKET).upload(path, blob, {contentType:'audio/webm', upsert:false});
-      if(up.error){ msg.textContent='فشل الرفع: '+up.error.message; return; }
-      const ins=await supabase.from('recordings').insert({speaker_id:spId, text_id:txId, storage_path:path, qa_status:'pending', mic_type:micType.value||null, session_id:sessionId.value||null});
-      if(ins.error){ msg.textContent='تم الرفع لكن فشل إدخال السجل: '+ins.error.message; return; }
-      msg.textContent='تم الرفع والتسجيل بنجاح ✅'; uploadBtn.disabled=true;
+      const ins=await supabase.from('recordings').insert([{speaker_id:spId, text_id:txId, storage_path:path, qa_status:'pending'}]);
+      if(ins.error){ msg.textContent='فشل إدخال السجل: '+ins.error.message; return; }
+
+      // 🔁 تحديث عداد النص
+      await supabase.rpc('increment_record_count', { text_uuid: txId });
+      msg.textContent='تم رفع التسجيل بنجاح ✅';
+      uploadBtn.disabled=true; resetBtn.disabled=true;
+      await loadTexts();
+    };
+
+    // 🧩 إضافة متحدث جديد
+    addSpeaker.onclick=async()=>{
+      const name=$('#newName').value.trim(); const gender=$('#newGender').value; const age=$('#newAge').value;
+      if(!name){ addMsg.textContent='يرجى كتابة الاسم'; return; }
+      const { data: existing } = await supabase.from('speakers').select('code').order('code',{ascending:false}).limit(1);
+      let lastCode = existing?.[0]?.code || 'SPK-000';
+      let nextNum = parseInt(lastCode.split('-')[1] || 0) + 1;
+      let newCode = 'SPK-' + String(nextNum).padStart(3,'0');
+      const ins = await supabase.from('speakers').insert([{ code:newCode, name, gender, age }]);
+      if(ins.error){ addMsg.textContent='فشل الإضافة: '+ins.error.message; return; }
+      addMsg.textContent=`تمت إضافة ${name} برمز ${newCode} ✅`;
+      await loadSpeakers();
     };
   </script>
 </body>
