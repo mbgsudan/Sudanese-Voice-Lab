@@ -1,10 +1,17 @@
+<script>
+if (!localStorage.getItem("admin_auth")) {
+  alert("🔐 يجب تسجيل الدخول أولاً");
+  window.location.href = "admin.html";
+}
+</script>
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🛠️ لوحة مراجعة التسجيلات - صوتنا</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 body {
   font-family: "Cairo", sans-serif;
@@ -29,7 +36,7 @@ h1 {
   justify-content: center;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 .btn {
   padding: 10px 18px;
@@ -39,36 +46,34 @@ h1 {
   cursor: pointer;
   transition: 0.2s;
 }
-.add {
-  background: linear-gradient(90deg, #00e0b6, #00b4d8);
-  color: #fff;
-}
-.logout {
-  background: #ff4d4d;
-  color: #fff;
-}
-.add:hover { opacity: 0.9; }
+.add { background: linear-gradient(90deg, #00e0b6, #00b4d8); color: #fff; }
+.logout { background: #ff4d4d; color: #fff; }
 .logout:hover { background: #ff6666; }
 
-#addSpeakerBox {
+#statsBar {
+  display: flex;
+  justify-content: space-around;
   background: #0f1518;
   border: 1px solid #00e0b6;
   border-radius: 14px;
-  padding: 15px;
-  margin-bottom: 20px;
-  display: none;
-  max-width: 550px;
-  margin-inline: auto;
-}
-#addSpeakerBox input, #addSpeakerBox select {
-  width: 100%;
-  margin: 6px 0;
   padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #333;
-  background: #0c0f10;
-  color: #fff;
+  margin-bottom: 20px;
+  text-align: center;
 }
+#statsBar div {
+  flex: 1;
+  color: #ccc;
+  font-size: 15px;
+}
+#statsBar span {
+  display: block;
+  font-size: 22px;
+  font-weight: bold;
+}
+.approved { color: #00ff88; }
+.rejected { color: #ff5555; }
+.pending { color: #ffaa33; }
+
 .card {
   background: #0f1314;
   border-radius: 16px;
@@ -78,103 +83,25 @@ h1 {
   transition: transform .2s ease;
 }
 .card:hover { transform: translateY(-3px); }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-.card-header h3 {
-  margin: 0;
-  color: #00e0b6;
-}
-.info {
-  font-size: 14px;
-  color: #a9b2b3;
-  margin-bottom: 8px;
-  line-height: 1.8;
-}
-.audioBox {
-  margin: 10px 0;
-  background: #1a1f21;
-  border-radius: 10px;
-  padding: 10px;
-}
-.status {
-  font-size: 14px;
-  color: #bbb;
-}
-.status.pending { color: #ffb347; }
-.status.approved { color: #4caf50; }
-.status.rejected { color: #ff4d4d; }
-
-.btns {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.approve {
-  background: #00c46b;
-  color: #fff;
-}
-.reject {
-  background: #e63946;
-  color: #fff;
-}
-.approve:hover { background: #00e67a; }
-.reject:hover { background: #ff5c5c; }
-#statusMsg {
-  text-align: center;
-  margin-top: 10px;
-  color: #00e0b6;
-}
-audio {
-  width: 100%;
-  border-radius: 8px;
-}
+.status { font-size: 14px; margin-bottom: 5px; }
+.btns { margin-top: 10px; display: flex; gap: 10px; }
+.approve { background: #00c46b; color: #fff; }
+.reject { background: #e63946; color: #fff; }
 </style>
 </head>
 <body>
-
-<script>
-  // 🔐 حماية الصفحة
-  if (!localStorage.getItem("admin_auth")) {
-    alert("🔐 يجب تسجيل الدخول أولاً للوصول إلى لوحة المراجعة.");
-    window.location.href = "admin.html";
-  }
-</script>
-
   <div class="container">
     <h1>🛠️ لوحة مراجعة التسجيلات</h1>
     <div class="topbar">
       <button class="btn add" onclick="toggleAddSpeaker()">➕ إضافة متحدث جديد</button>
-      <button class="btn logout" onclick="logoutAdmin()">🚪 خروج</button>
+      <button class="btn logout" onclick="logout()">🚪 خروج</button>
     </div>
 
-    <div id="addSpeakerBox">
-      <h3>إضافة متحدث جديد</h3>
-      <input id="spk_name" type="text" placeholder="اسم المتحدث">
-      <select id="spk_gender">
-        <option value="">اختر الجنس</option>
-        <option value="ذكر">ذكر</option>
-        <option value="أنثى">أنثى</option>
-      </select>
-      <select id="spk_age">
-        <option value="">الفئة العمرية</option>
-        <option value="18-25">18-25</option>
-        <option value="25-35">25-35</option>
-        <option value="35-45">35-45</option>
-      </select>
-      <select id="spk_accent">
-        <option value="">اللهجة</option>
-        <option value="الخرطوم">الخرطوم</option>
-        <option value="وسط السودان">وسط السودان</option>
-        <option value="شرق السودان">شرق السودان</option>
-        <option value="غرب السودان">غرب السودان</option>
-      </select><br>
-      <button class="btn add" onclick="addSpeaker()">💾 حفظ</button>
-      <p id="statusMsg"></p>
+    <div id="statsBar">
+      <div class="total">إجمالي<span id="totalCount">0</span></div>
+      <div class="approved">مقبول<span id="approvedCount">0</span></div>
+      <div class="rejected">مرفوض<span id="rejectedCount">0</span></div>
+      <div class="pending">قيد المراجعة<span id="pendingCount">0</span></div>
     </div>
 
     <div id="recordsContainer">⏳ جارِ تحميل التسجيلات...</div>
@@ -189,9 +116,7 @@ const supabase = createClient(
 
 const BUCKET = "recordings";
 const container = document.getElementById("recordsContainer");
-const statusMsg = document.getElementById("statusMsg");
 
-// تحميل التسجيلات
 async function loadRecords() {
   container.innerHTML = "⏳ جارِ التحميل...";
   const { data, error } = await supabase
@@ -199,90 +124,49 @@ async function loadRecords() {
     .select(`id, status, storage_path, speakers(name, gender, age_range, accent), texts(content)`)
     .order("created_at", { ascending: false });
 
-  if (error) {
+  if (error || !data) {
     container.innerHTML = "<p>⚠️ فشل تحميل التسجيلات.</p>";
     return;
   }
 
-  if (!data.length) {
-    container.innerHTML = "<p>لا توجد تسجيلات حالياً.</p>";
-    return;
-  }
+  let approved = 0, rejected = 0, pending = 0;
+  data.forEach(r => {
+    if (r.status === "approved") approved++;
+    else if (r.status === "rejected") rejected++;
+    else pending++;
+  });
+
+  document.getElementById("totalCount").textContent = data.length;
+  document.getElementById("approvedCount").textContent = approved;
+  document.getElementById("rejectedCount").textContent = rejected;
+  document.getElementById("pendingCount").textContent = pending;
 
   container.innerHTML = "";
   for (const r of data) {
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <div class="card-header">
-        <h3>${r.speakers?.name || "مجهول"}</h3>
-        <span class="status ${r.status}">الحالة: ${r.status}</span>
-      </div>
-      <div class="info">
-        👤 الجنس: ${r.speakers?.gender || "-"} |
-        🎂 العمر: ${r.speakers?.age_range || "-"} |
-        🗣️ اللهجة: ${r.speakers?.accent || "-"}
-      </div>
-      <div class="info">💬 النص: ${r.texts?.content || "-"}</div>
-      <div class="audioBox">
-        <audio controls src="https://qcctqvmwwpsoiexgdqwp.supabase.co/storage/v1/object/public/${BUCKET}/${r.storage_path}"></audio>
-      </div>
+      <div class="status ${r.status}">الحالة: ${r.status}</div>
+      <h3>${r.speakers?.name || "مجهول"}</h3>
+      <p>👤 ${r.speakers?.gender || "-"} | 🎂 ${r.speakers?.age_range || "-"} | 🗣️ ${r.speakers?.accent || "-"}</p>
+      <p>💬 ${r.texts?.content || "-"}</p>
+      <audio controls src="https://qcctqvmwwpsoiexgdqwp.supabase.co/storage/v1/object/public/${BUCKET}/${r.storage_path}"></audio>
       <div class="btns">
-        <button class="btn approve" data-id="${r.id}" data-status="approved">✅ موافقة</button>
-        <button class="btn reject" data-id="${r.id}" data-status="rejected">❌ رفض</button>
-      </div>
-    `;
+        <button class="btn approve" onclick="updateStatus(${r.id}, 'approved')">✅ موافقة</button>
+        <button class="btn reject" onclick="updateStatus(${r.id}, 'rejected')">❌ رفض</button>
+      </div>`;
     container.appendChild(card);
   }
-
-  // تفعيل الأزرار بعد التحميل
-  document.querySelectorAll(".approve, .reject").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
-      const id = e.target.dataset.id;
-      const status = e.target.dataset.status;
-      await updateStatus(id, status);
-    });
-  });
 }
 
-// تحديث الحالة
-async function updateStatus(id, status) {
-  const { error } = await supabase.from("recordings").update({ status }).eq("id", id);
-  if (error) alert("❌ فشل تحديث الحالة");
-  else loadRecords();
-}
-
-// إضافة متحدث
-window.addSpeaker = async function () {
-  const name = document.getElementById("spk_name").value.trim();
-  const gender = document.getElementById("spk_gender").value;
-  const age = document.getElementById("spk_age").value;
-  const accent = document.getElementById("spk_accent").value;
-
-  if (!name || !gender || !age || !accent) {
-    statusMsg.textContent = "⚠️ يرجى تعبئة جميع الحقول";
-    return;
-  }
-
-  const { error } = await supabase.from("speakers").insert([{ name, gender, age_range: age, accent }]);
-  if (error) statusMsg.textContent = "❌ فشل الإضافة";
-  else {
-    statusMsg.textContent = "✅ تمت الإضافة بنجاح";
-    document.getElementById("addSpeakerBox").style.display = "none";
-    loadRecords();
-  }
+window.updateStatus = async function (id, status) {
+  await supabase.from("recordings").update({ status }).eq("id", id);
+  loadRecords();
 };
 
-// عرض/إخفاء نموذج الإضافة
-window.toggleAddSpeaker = function () {
-  const box = document.getElementById("addSpeakerBox");
-  box.style.display = box.style.display === "none" ? "block" : "none";
-};
-
-// زر الخروج
-window.logoutAdmin = function () {
+window.logout = function () {
   localStorage.removeItem("admin_auth");
-  window.location.href = "index.html";
+  location.href = "admin.html";
 };
 
 loadRecords();
