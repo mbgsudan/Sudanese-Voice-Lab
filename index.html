@@ -1,72 +1,26 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>منصة صوتنا – Sawtna</title>
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    body {
-      background-color: #0d0f16;
-      color: #e0e6f0;
-      font-family: "Cairo", sans-serif;
-      text-align: center;
-      padding: 50px 10px;
-      margin: 0;
-    }
-
-    img.logo {
-      width: 140px;
-      margin-bottom: 15px;
-    }
-
-    h1 {
-      font-size: 1.6rem;
-      color: #77baff;
-      margin-bottom: 25px;
-      font-weight: 500;
-    }
-
-    .nav {
-      display: flex;
-      justify-content: center;
-      gap: 25px;
-      flex-wrap: wrap;
-      margin-bottom: 30px;
-    }
-
-    .btn {
-      background: transparent;
-      border: 2px solid #2d8cff;
-      color: #fff;
-      padding: 12px 30px;
-      border-radius: 12px;
-      font-size: 1.2rem;
-      text-decoration: none;
-      transition: 0.3s;
-      box-shadow: 0 0 8px rgba(45, 140, 255, 0.3);
-    }
-
-    .btn:hover {
-      background: #2d8cff;
-      box-shadow: 0 0 15px rgba(45, 140, 255, 0.7);
-      transform: scale(1.05);
-    }
-
-    footer {
-      margin-top: 40px;
-      font-size: 1rem;
-      color: #b9c2d2;
-    }
-
-    footer span {
-      color: #ffd966;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>منصة صوتنا – الرئيسية</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <img src="assets/logo-full.png" alt="Sawtna Logo" class="logo">
-  <h1>🎙️ مرحب بيك في منصة صوتنا — سجل بصوتك وساهم في بناء أول قاعدة بيانات صوت سودانية!</h1>
+  <header>
+    <img src="logo-full.png" alt="شعار صوتنا" class="logo" />
+    <h1>🎙️ مرحب بيك في منصة صوتنا</h1>
+    <p>سجل بصوتك وساهم في بناء أول قاعدة بيانات صوت سودانية!</p>
+  </header>
 
-  <div class="nav">
-    <a href="record.htm
+  <nav class="nav">
+    <a href="record.html" class="btn">التسجيل</a>
+    <a href="review.html" class="btn">المراجعة</a>
+    <a href="progress.html" class="btn">المتابعة</a>
+  </nav>
+
+  <footer>
+    ✨ تم التطوير بواسطة <span>محمد بابكر</span> وفريق <span>صوتنا 2025</span> ✨
+  </footer>
+</body>
+</html>
