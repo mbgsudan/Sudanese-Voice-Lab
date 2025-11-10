@@ -458,3 +458,12 @@ async function addNewSpeaker(event) {
         sawtna.hideLoading(submitBtn);
     }
 }
+
+function handleMicError(err){
+  console.error('Mic error', err);
+  const box = document.getElementById('waveform');
+  if(box){
+    box.innerHTML = '<div style="padding:12px;color:#ffb3b3">تعذّر الوصول للميكروفون. افتح صلاحية الميكروفون للمتصفح ثم أعد المحاولة.</div>';
+  }
+  showBanner('لا يوجد إذن للميكروفون — فعّل الإذن من المتصفح ثم أعد المحاولة', 'error');
+}

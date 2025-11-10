@@ -346,3 +346,20 @@ window.sawtna = {
     getGenderText,
     supabase
 };
+
+/** عرض لافتة تنبيه أعلى الصفحة */
+function showBanner(msg, type='warn'){
+  const id='sawtna-banner';
+  let el=document.getElementById(id);
+  if(!el){
+    el=document.createElement('div');
+    el.id=id;
+    el.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;padding:10px 16px;text-align:center;font-weight:600';
+    document.body.appendChild(el);
+  }
+  el.style.background= type==='error' ? '#5a1a1a' : '#2a2d2a';
+  el.style.borderBottom='1px solid #3a3a3a';
+  el.style.color='#d0f5d9';
+  el.textContent=msg;
+  setTimeout(()=>{ if(el) el.remove(); }, 5000);
+}
