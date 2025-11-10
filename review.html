@@ -1,111 +1,135 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🛠️ لوحة مراجعة التسجيلات - صوتنا</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>مراجعة التسجيلات – صوتنا</title>
 <style>
-body{font-family:Cairo,Arial,sans-serif;background:#0b0b0b;color:#fff;margin:0;text-align:center}
-.container{max-width:980px;margin:40px auto;background:#111;padding:24px;border-radius:18px;box-shadow:0 0 35px rgba(0,0,0,.4)}
-h1{color:#00e0b6;margin:6px 0 14px}
-button{padding:10px 18px;border:none;border-radius:10px;margin:4px;color:#fff;cursor:pointer}
-.add{background:#00e0b6} .logout{background:#666} .approve{background:#00b951} .reject{background:#ff4d4d}
-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
-th,td{padding:10px;border-bottom:1px solid #2a2a2a;text-align:right}
-tr:hover{background:#161616}
-audio{width:180px}
-#login input{padding:10px;border-radius:8px;border:none}
-.small{color:#aaa;font-size:12px}
-.form-inline input, .form-inline select{padding:8px;border-radius:8px;border:none;background:#1a1a1a;color:#fff;margin:4px}
+  :root{
+    --bg:#0b0b0b; --panel:#111; --muted:#9aa3a9; --text:#eaf2f4; --brand:#00e0c6; --ok:#00c97a; --err:#ff4d4d;
+  }
+  body{font-family:"Cairo", system-ui, -apple-system, Arial; background:var(--bg); color:var(--text); margin:0}
+  .wrap{max-width:1100px;margin:40px auto;background:var(--panel);padding:26px;border-radius:20px;box-shadow:0 0 36px rgba(0,0,0,.45)}
+  h1{margin:0 0 8px; color:var(--brand); text-align:center}
+  .login{max-width:420px;margin:90px auto;text-align:center}
+  input[type=password], input[type=text]{width:100%;background:#161a1b;color:var(--text);border:1px solid #222;border-radius:12px;padding:12px}
+  button{border:0;border-radius:12px;padding:10px 16px;cursor:pointer}
+  .btn{background:#2a2f32;color:var(--text)}
+  .btn-green{background:#2d6a4f}
+  .btn-red{background:#a11}
+  table{width:100%;border-collapse:collapse;margin-top:16px}
+  th,td{border-bottom:1px solid #222;padding:10px;vertical-align:middle}
+  audio{width:220px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tools{display:flex;gap:10px;justify-content:center;margin:10px 0}
+  .muted{color:var(--muted)}
 </style>
 </head>
 <body>
-<div id="login" class="container">
-  <img src="logo-full.png" alt="شعار صوتنا" style="width:80px"/>
-  <h2>🔐 دخول المشرف</h2>
-  <input type="password" id="adminPass" placeholder="أدخل كلمة السر" />
-  <button onclick="checkPass()">دخول</button>
-  <p class="small">ملاحظة: كلمة السر للمشرف فقط.</p>
+
+<div id="gate" class="login">
+  <h1>🔐 دخول المراجع</h1>
+  <p class="muted">أدخل كلمة السر للوصول إلى لوحة المراجعة.</p>
+  <input id="pwd" type="password" placeholder="كلمة السر" />
+  <div style="margin-top:10px"><button id="go" class="btn">دخول</button></div>
+  <p class="muted" style="margin-top:12px">تلميح: كلمة السر محفوظة في جلسة المتصفح مؤقتًا.</p>
 </div>
 
-<div id="panel" class="container" style="display:none">
+<div id="app" class="wrap" style="display:none">
   <h1>🛠️ لوحة مراجعة التسجيلات</h1>
-  <div>
-    <button class="add" onclick="showAddSpeaker()">➕ إضافة متحدث</button>
-    <button class="logout" onclick="logout()">🚪 خروج</button>
+
+  <div class="tools">
+    <input id="newSpeaker" type="text" placeholder="اسم متحدث جديد" style="min-width:260px" />
+    <button id="addSpk" class="btn">➕ إضافة متحدث</button>
+    <button id="logout" class="btn-red">خروج</button>
   </div>
 
-  <div id="addBox" class="form-inline" style="display:none;margin-top:10px">
-    <input id="spk_name" placeholder="الاسم" />
-    <select id="spk_gender"><option value="">الجنس</option><option>ذكر</option><option>أنثى</option></select>
-    <select id="spk_age"><option value="">العمر</option><option>20-30</option><option>30-40</option><option>40-50</option></select>
-    <select id="spk_accent"><option value="">اللهجة</option><option>لهجة الخرطوم</option><option>وسط السودان</option><option>شرق السودان</option><option>غرب السودان</option></select>
-    <button class="add" onclick="addSpeaker()">حفظ المتحدث</button>
-  </div>
-
-  <table>
-    <thead><tr><th>المتحدث</th><th>النص</th><th>الصوت</th><th>الحالة</th><th>إجراء</th></tr></thead>
-    <tbody id="tbody"></tbody>
+  <table id="tbl">
+    <thead>
+      <tr><th>المتحدث</th><th>النص</th><th>الصوت</th><th>الحالة</th><th>إجراء</th></tr>
+    </thead>
+    <tbody id="tbody"><tr><td colspan="5" class="muted">جارِ التحميل…</td></tr></tbody>
   </table>
 </div>
 
 <script type="module">
-import {{ createClient }} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
-const supabase = createClient("https://qcctqvmwwpsoiexgdqwp.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ");
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
+const SUPABASE_URL="https://qcctqvmwwpsoiexgdqwp.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ";
 const BUCKET="recordings";
+const db=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-const loginDiv=document.getElementById("login");
-const panel=document.getElementById("panel");
+/* ===== بوابة كلمة السر ===== */
+const PASS="70003mbgz"; // كما طلبت
+const gate=document.getElementById("gate");
+const app=document.getElementById("app");
+const go=document.getElementById("go");
+const pwd=document.getElementById("pwd");
+const logout=document.getElementById("logout");
+
+function enter(){
+  if(pwd.value===PASS){ sessionStorage.setItem("rv-ok","1"); gate.style.display="none"; app.style.display="block"; loadRecs(); }
+  else alert("❌ كلمة السر غير صحيحة");
+}
+go.onclick=enter;
+pwd.addEventListener("keydown",e=>{ if(e.key==="Enter") enter(); });
+
+if(sessionStorage.getItem("rv-ok")==="1"){ gate.style.display="none"; app.style.display="block"; loadRecs(); }
+
+logout.onclick=()=>{ sessionStorage.removeItem("rv-ok"); location.reload(); };
+
+/* ===== عرض التسجيلات ===== */
 const tbody=document.getElementById("tbody");
 
-window.checkPass=function(){
-  const p=document.getElementById("adminPass").value;
-  if(p==="70003mbgz"){ loginDiv.style.display="none"; panel.style.display="block"; load(); }
-  else alert("❌ كلمة السر غير صحيحة");
-};
-window.logout=function(){ panel.style.display="none"; loginDiv.style.display="block"; };
+async function loadRecs(){
+  tbody.innerHTML = `<tr><td colspan="5" class="muted">جارِ التحميل…</td></tr>`;
+  const { data, error } = await db.from("recordings")
+    .select("id, status, storage_path, speakers(name), texts(content)")
+    .order("created_at", { ascending:false })
+    .limit(300);
+  if(error){ tbody.innerHTML = `<tr><td colspan="5">خطأ في التحميل</td></tr>`; return; }
+  if(!data?.length){ tbody.innerHTML = `<tr><td colspan="5" class="muted">لا توجد تسجيلات.</td></tr>`; return; }
 
-async function load(){
-  tbody.innerHTML = '<tr><td colspan="5">⏳ جارِ التحميل...</td></tr>';
-  const { data, error } = await supabase
-    .from("recordings")
-    .select(`id,speaker_id,text_id,status,storage_path,speakers(name),texts(content)`)
-    .order("created_at",{ascending:false});
-  if(error) return tbody.innerHTML='<tr><td colspan="5">⚠️ خطأ في التحميل</td></tr>';
-  if(!data?.length) return tbody.innerHTML='<tr><td colspan="5">لا توجد تسجيلات بعد.</td></tr>';
   tbody.innerHTML="";
-  data.forEach(r=>{
+  for(const r of data){
     const tr=document.createElement("tr");
-    const url=`https://qcctqvmwwpsoiexgdqwp.supabase.co/storage/v1/object/public/${BUCKET}/${r.storage_path}`;
+    const audioUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${r.storage_path}`;
     tr.innerHTML = `
-      <td>${r.speakers?.name||"-"}</td>
-      <td>${(r.texts?.content||"-").slice(0,80)}...</td>
-      <td><audio controls src="${url}"></audio></td>
+      <td>${r.speakers?.name||"—"}</td>
+      <td>${r.texts?.content||"—"}</td>
+      <td><audio controls src="${audioUrl}"></audio></td>
       <td>${r.status||"pending"}</td>
-      <td>
-        <button class="approve" onclick='updateStatus(${r.id},"approved")'>✅</button>
-        <button class="reject" onclick='updateStatus(${r.id},"rejected")'>❌</button>
+      <td class="row">
+        <button class="btn-green" data-act="ok" data-id="${r.id}">✅ موافقة</button>
+        <button class="btn-red" data-act="no" data-id="${r.id}">❌ رفض</button>
       </td>`;
     tbody.appendChild(tr);
-  });
+  }
 }
-window.updateStatus = async function(id,status){
-  await supabase.from("recordings").update({status}).eq("id",id);
-  alert("تم الحفظ"); load();
-};
-window.showAddSpeaker=function(){
-  const box=document.getElementById("addBox");
-  box.style.display = box.style.display==="none"?"block":"none";
-};
-window.addSpeaker=async function(){
-  const name=document.getElementById("spk_name").value.trim();
-  const gender=document.getElementById("spk_gender").value;
-  const age=document.getElementById("spk_age").value;
-  const accent=document.getElementById("spk_accent").value;
-  if(!name||!gender||!age||!accent) return alert("أدخل البيانات كاملة");
+
+tbody.addEventListener("click", async e=>{
+  const btn=e.target.closest("button"); if(!btn) return;
+  const id=Number(btn.dataset.id); if(!id) return;
+  const act=btn.dataset.act;
+  btn.disabled=true;
+  try{
+    const status = act==="ok" ? "approved" : "rejected";
+    const { error } = await db.from("recordings").update({ status }).eq("id", id);
+    if(error) throw error;
+    await loadRecs();
+  }catch(err){ alert("فشل التحديث"); console.error(err); }
+  finally{ btn.disabled=false; }
+});
+
+/* ===== إضافة متحدث سريع ===== */
+document.getElementById("addSpk").onclick = async ()=>{
+  const name = document.getElementById("newSpeaker").value.trim();
+  if(!name){ alert("أدخل اسم المتحدث"); return; }
   const code = "SPK-" + Math.floor(100 + Math.random()*900);
-  const { error } = await supabase.from("speakers").insert([{name,gender,age_range:age,accent,code}]);
-  if(error) alert("فشل الإضافة"); else { alert("✅ تمت إضافة المتحدث"); document.getElementById("addBox").style.display="none"; }
+  const { error } = await db.from("speakers").insert({ name, code });
+  if(error){ alert("فشل الإضافة"); return; }
+  document.getElementById("newSpeaker").value="";
+  alert("✅ تمت إضافة المتحدث");
 };
 </script>
 </body>
