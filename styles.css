@@ -1,19 +1,110 @@
+body {
+  background-color: #0d0f16;
+  color: #e0e6f0;
+  font-family: "Cairo", sans-serif;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
 
-:root{--bg:#10131a;--panel:#171b24;--soft:#222838;--text:#e9eef6;--muted:#a8b3c7;--brand:#69b7ff;--success:#35c38c;--danger:#ff6b6b;--radius:14px}
-*{box-sizing:border-box}html,body{margin:0;padding:0;height:100%}
-body{font-family:"Cairo",system-ui,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
-.container{max-width:940px;margin:0 auto;padding:24px}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.title{font-size:20px;margin:0}.nav a{color:var(--muted);text-decoration:none;margin-left:12px;padding:8px 10px;border-radius:10px;border:1px solid transparent}
-.nav a.active,.nav a:hover{color:var(--text);border-color:var(--soft);background:linear-gradient(180deg,rgba(105,183,255,.15),rgba(0,0,0,0))}
-.panel{background:var(--panel);border:1px solid var(--soft);border-radius:var(--radius);padding:16px;margin-bottom:16px;box-shadow:0 12px 30px rgba(0,0,0,.25)}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-label{font-size:14px;color:var(--muted)}input,select,textarea,button{width:100%;padding:12px;border-radius:12px;border:1px solid var(--soft);background:#0f1320;color:var(--text)}
-button{cursor:pointer;font-weight:700}.btn{background:var(--brand);border-color:transparent}.btn-secondary{background:#2a3246}
-.btn-danger{background:var(--danger);border-color:transparent}.btn-success{background:var(--success);border-color:transparent}
-.audio{width:100%;margin-top:10px}.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.kpi .card{background:#0f1320;border:1px solid var(--soft);border-radius:12px;padding:14px}.kpi .num{font-size:26px;font-weight:800}
-.footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}.list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.card{background:#0f1320;border:1px solid var(--soft);border-radius:12px;padding:12px}.row{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
-hr{border:0;border-top:1px solid var(--soft);margin:12px 0}.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid var(--soft);color:var(--muted)}
-.notice{color:var(--muted);font-size:14px}.hidden{display:none}
+header {
+  margin-top: 40px;
+  margin-bottom: 25px;
+}
+
+.logo {
+  width: 110px;
+  margin-bottom: 10px;
+}
+
+h1, h2 {
+  color: #7dc4ff;
+  margin: 10px 0;
+  font-weight: 600;
+}
+
+p {
+  color: #a9b6c9;
+  margin-bottom: 20px;
+}
+
+.nav {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.btn {
+  background: #1e2633;
+  border: 2px solid #2d8cff;
+  color: #fff;
+  padding: 12px 25px;
+  border-radius: 10px;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #2d8cff;
+  transform: scale(1.05);
+}
+
+footer {
+  margin-top: 40px;
+  padding: 20px;
+  font-size: 0.9rem;
+  color: #b9c2d2;
+}
+
+footer span {
+  color: #ffd966;
+}
+
+.back {
+  display: inline-block;
+  color: #77baff;
+  text-decoration: none;
+  font-size: 1rem;
+  margin-top: 20px;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+.chart-placeholder {
+  border: 2px dashed #2d8cff;
+  padding: 40px;
+  border-radius: 10px;
+  margin: 30px auto;
+  width: 80%;
+  color: #7dc4ff;
+  font-size: 1.1rem;
+}
+
+/* 📱 تحسين العرض للموبايل */
+@media (max-width: 600px) {
+  .btn {
+    width: 80%;
+    padding: 14px;
+    font-size: 1.1rem;
+  }
+
+  .nav {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .chart-placeholder {
+    width: 90%;
+    font-size: 1rem;
+  }
+
+  .logo {
+    width: 90px;
+  }
+}
