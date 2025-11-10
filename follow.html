@@ -1,43 +1,0 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>متابعة التسجيلات — صوتنا</title>
-  <link rel="stylesheet" href="./styles.css">
-  <script src="./assets/js/config.js"></script>
-  <script type="module" src="./assets/js/follow.js"></script>
-</head>
-<body class="page page-muted">
-  <header class="topbar">
-    <div class="brand"><h1>متابعة التسجيلات 🎧</h1></div>
-    <nav><a class="btn ghost" href="./index.html">الرئيسية</a></nav>
-  </header>
-
-  <main class="container narrow">
-    <div class="card">
-      <label class="label">اختر المتحدث</label>
-      <select id="speakerSelect" class="select"><option value="">كل المتحدثين</option></select>
-      <div class="row gap" style="margin-top:10px">
-        <button id="btnExport" class="btn">تصدير CSV ⬇️</button>
-      </div>
-    </div>
-
-    <section class="row wrap gap card" id="stats">
-      <div class="stat"><div class="stat-num" id="cntApproved">0</div><div class="stat-label">مقبولة</div></div>
-      <div class="stat"><div class="stat-num" id="cntRejected">0</div><div class="stat-label">مرفوضة</div></div>
-      <div class="stat"><div class="stat-num" id="cntPending">0</div><div class="stat-label">قيد المراجعة</div></section>
-
-    <section id="tableWrap" class="card">
-      <div class="scroll-x">
-        <table class="table" id="tbl">
-          <thead><tr><th>الوقت</th><th>المتحدث</th><th>النص</th><th>الحالة</th><th>المدّة</th><th>الملف</th></tr></thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-    </section>
-  </main>
-
-  <footer>© 2025 — تم الإنشاء بواسطة <b>محمد بابكر</b> — Sawtna Voice Lab</footer>
-</body>
-</html>
