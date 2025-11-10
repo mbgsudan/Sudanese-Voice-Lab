@@ -1,0 +1,1 @@
+window.SAWTNA = { SUPABASE_URL: '', SUPABASE_ANON: '', BUCKET: '', ADMIN_PASSWORD: '70003mbgz' };
