@@ -1,148 +1,136 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>🎙️ صوتنا – التسجيل الصوتي</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <meta charset="utf-8">
+  <title>🎙️ التسجيل - صوتنا</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <img src="logo-full.png" class="logo" alt="صوتنا"/>
-      <h2>🎧 التسجيل الصوتي</h2>
-      <p class="sub">اختر اسمك، اقرأ الجملة، ثم سجّل وارفع المقطع.</p>
+      <img src="logo-full.png" class="logo" alt="صوتنا">
+      <h2>🎙️ تسجيل الأصوات – منصة صوتنا</h2>
     </header>
 
-    <div class="panel">
-      <div class="grid">
-        <div class="field">
-          <label>المتحدث</label>
-          <select id="speaker"></select>
-        </div>
-        <div class="field">
-          <label>النص المطلوب</label>
-          <select id="textSel"></select>
-        </div>
+    <section id="record-section">
+      <label for="speaker">اختر اسمك:</label>
+      <select id="speaker"></select>
+
+      <div id="textBox">
+        <h3>النص الحالي:</h3>
+        <p id="currentText">جارٍ تحميل النص...</p>
       </div>
 
-      <p id="currentText" class="notice"></p>
-
-      <div class="grid">
-        <button id="start" class="btn">ابدأ التسجيل</button>
-        <button id="stop" class="btn-ghost" disabled>إيقاف</button>
-      </div>
-      <audio id="player" controls></audio>
-      <div class="grid">
-        <button id="upload" class="btn-ok" disabled>رفع التسجيل</button>
-        <button id="reset" class="btn-ghost" disabled>تسجيل جديد</button>
-      </div>
-      <p id="msg" class="notice"></p>
-    </div>
-
-    <div class="panel" id="adminPanel" style="display:none">
-      <h3>👤 إضافة متحدث جديد</h3>
-      <div class="grid">
-        <div class="field">
-          <label>الاسم الكامل</label>
-          <input id="newName" placeholder="اسم المتحدث"/>
-        </div>
-        <div class="field">
-          <label>الجنس</label>
-          <select id="newGender">
-            <option value="غير محدد">غير محدد</option>
-            <option value="ذكر">ذكر</option>
-            <option value="أنثى">أنثى</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>العمر (اختياري)</label>
-          <input id="newAge" type="number" min="5" max="100"/>
-        </div>
-      </div>
-      <button id="addSpeaker" class="btn">➕ إضافة المتحدث</button>
-      <p id="addMsg" class="notice"></p>
-    </div>
-
-    <div class="footer">تم التطوير بواسطة محمد بابكر وفريق صوتنا 2025 ✨</div>
+      <button id="recordBtn" class="btn">🎤 ابدأ التسجيل</button>
+      <button id="stopBtn" class="btn" disabled>⏹️ أوقف التسجيل</button>
+      <button id="uploadBtn" class="btn" disabled>⬆️ ارفع التسجيل</button>
+      <p id="status"></p>
+    </section>
   </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm';
-
-    const SUPABASE_URL = "https://qcctqvmwwpsoiexgdqwp.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = createClient(
+      "https://qcctqvmwwpsoiexgdqwp.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ"
+    );
     const BUCKET = "recordings";
 
-    const $ = (s)=>document.querySelector(s);
-    const speakerSel=$('#speaker'), textSel=$('#textSel'), currentText=$('#currentText');
-    const startBtn=$('#start'), stopBtn=$('#stop'), uploadBtn=$('#upload'), resetBtn=$('#reset');
-    const player=$('#player'), msg=$('#msg');
-    const adminPanel=$('#adminPanel'), addSpeaker=$('#addSpeaker'), addMsg=$('#addMsg');
+    const speakerSelect = document.getElementById("speaker");
+    const currentText = document.getElementById("currentText");
+    const recordBtn = document.getElementById("recordBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const status = document.getElementById("status");
 
-    // 🔐 إظهار لوحة المشرف
-    const pw = prompt('أدخل كلمة مرور المشرف أو اضغط إلغاء للاستمرار كمستخدم عادي:');
-    if(pw === '70003mbgz'){ adminPanel.style.display='block'; }
+    let recorder, chunks = [], audioBlob, currentTextId = null;
 
-    // 📥 تحميل المتحدثين والنصوص
-    async function loadSpeakers(){
-      const { data } = await supabase.from('speakers').select('id,code,name').order('code');
-      speakerSel.innerHTML = (data||[]).map(s=>`<option value="${s.id}">${s.code} — ${s.name}</option>`).join('');
+    // تحميل أسماء المتحدثين
+    async function loadSpeakers() {
+      const { data } = await supabase.from("speakers").select("id, name");
+      speakerSelect.innerHTML = data.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
     }
-    async function loadTexts(){
-      const { data } = await supabase.from('texts').select('id,code,content').eq('status','available').order('record_count',{ascending:true});
-      textSel.innerHTML = (data||[]).map(t=>`<option value="${t.id}" data-content="${encodeURIComponent(t.content)}">${t.code}</option>`).join('');
-      if(data?.length) currentText.textContent = decodeURIComponent(textSel.options[0].dataset.content);
+
+    // تحميل النص المتاح
+    async function loadText() {
+      const { data } = await supabase
+        .from("texts")
+        .select("id, content, record_count, max_recordings")
+        .eq("status", "available")
+        .order("record_count", { ascending: true })
+        .limit(1)
+        .single();
+
+      if (!data) {
+        currentText.textContent = "تم الانتهاء من جميع النصوص ✅";
+        recordBtn.disabled = true;
+        return;
+      }
+
+      currentTextId = data.id;
+      currentText.textContent = data.content;
     }
-    textSel.addEventListener('change',()=>{ currentText.textContent = decodeURIComponent(textSel.options[textSel.selectedIndex].dataset.content); });
-    await loadSpeakers(); await loadTexts();
 
-    // 🎤 التسجيل الصوتي
-    let mediaRecorder, chunks=[];
-    startBtn.onclick=async()=>{
-      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-      mediaRecorder=new MediaRecorder(stream);
-      chunks=[]; mediaRecorder.ondataavailable=e=>chunks.push(e.data);
-      mediaRecorder.onstop=()=>{ const blob=new Blob(chunks,{type:'audio/webm'}); player.src=URL.createObjectURL(blob); uploadBtn.disabled=false; resetBtn.disabled=false; };
-      mediaRecorder.start(); startBtn.disabled=true; stopBtn.disabled=false; msg.textContent='جارٍ التسجيل...';
-    };
-    stopBtn.onclick=()=>{ mediaRecorder?.stop(); startBtn.disabled=false; stopBtn.disabled=true; msg.textContent='تم الإيقاف.'; };
-    resetBtn.onclick=()=>{ player.removeAttribute('src'); uploadBtn.disabled=true; resetBtn.disabled=true; };
-
-    // 📤 رفع التسجيل
-    uploadBtn.onclick=async()=>{
-      msg.textContent='جارٍ رفع التسجيل...';
-      const blob=new Blob(chunks,{type:'audio/webm'});
-      const spId=speakerSel.value, txId=textSel.value;
-      const ts=new Date().toISOString().replace(/[:.]/g,'-');
-      const fileName=`${spId}_${txId}_${ts}.webm`; const path=`${spId}/${fileName}`;
-      const up=await supabase.storage.from(BUCKET).upload(path, blob, {contentType:'audio/webm'});
-      if(up.error){ msg.textContent='فشل في رفع الملف: '+up.error.message; return; }
-
-      const ins=await supabase.from('recordings').insert([{speaker_id:spId, text_id:txId, storage_path:path, qa_status:'pending'}]);
-      if(ins.error){ msg.textContent='فشل إدخال السجل: '+ins.error.message; return; }
-
-      // 🔁 تحديث عداد النص
-      await supabase.rpc('increment_record_count', { text_uuid: txId });
-      msg.textContent='تم رفع التسجيل بنجاح ✅';
-      uploadBtn.disabled=true; resetBtn.disabled=true;
-      await loadTexts();
+    // التسجيل الصوتي
+    recordBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recorder = new MediaRecorder(stream);
+      chunks = [];
+      recorder.ondataavailable = e => chunks.push(e.data);
+      recorder.onstop = () => {
+        audioBlob = new Blob(chunks, { type: "audio/webm" });
+        uploadBtn.disabled = false;
+      };
+      recorder.start();
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
+      status.textContent = "🎙️ جاري التسجيل...";
     };
 
-    // 🧩 إضافة متحدث جديد
-    addSpeaker.onclick=async()=>{
-      const name=$('#newName').value.trim(); const gender=$('#newGender').value; const age=$('#newAge').value;
-      if(!name){ addMsg.textContent='يرجى كتابة الاسم'; return; }
-      const { data: existing } = await supabase.from('speakers').select('code').order('code',{ascending:false}).limit(1);
-      let lastCode = existing?.[0]?.code || 'SPK-000';
-      let nextNum = parseInt(lastCode.split('-')[1] || 0) + 1;
-      let newCode = 'SPK-' + String(nextNum).padStart(3,'0');
-      const ins = await supabase.from('speakers').insert([{ code:newCode, name, gender, age }]);
-      if(ins.error){ addMsg.textContent='فشل الإضافة: '+ins.error.message; return; }
-      addMsg.textContent=`تمت إضافة ${name} برمز ${newCode} ✅`;
-      await loadSpeakers();
+    stopBtn.onclick = () => {
+      recorder.stop();
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+      status.textContent = "✅ تم إيقاف التسجيل.";
     };
+
+    uploadBtn.onclick = async () => {
+      const speakerId = speakerSelect.value;
+      if (!speakerId || !audioBlob || !currentTextId) {
+        alert("تأكد من اختيار اسمك وتسجيل الصوت قبل الرفع.");
+        return;
+      }
+
+      const fileName = `${speakerId}_${Date.now()}.webm`;
+      status.textContent = "⬆️ جاري رفع التسجيل...";
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET)
+        .upload(fileName, audioBlob);
+
+      if (uploadError) {
+        status.textContent = "❌ فشل في الرفع.";
+        return;
+      }
+
+      // حفظ البيانات في الجدول
+      await supabase.from("recordings").insert({
+        speaker_id: speakerId,
+        text_id: currentTextId,
+        storage_path: fileName
+      });
+
+      // تحديث عداد النص
+      await supabase.rpc("increment_record_count", { text_uuid: currentTextId });
+
+      status.textContent = "✅ تم رفع التسجيل بنجاح!";
+      uploadBtn.disabled = true;
+      loadText();
+    };
+
+    // تحميل البيانات عند التشغيل
+    loadSpeakers();
+    loadText();
   </script>
 </body>
 </html>
