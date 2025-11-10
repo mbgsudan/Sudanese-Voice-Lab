@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>📋 متابعة المساهم - صوتنا</title>
+<style>
+body{font-family:Cairo,Arial,sans-serif;background:#0b0b0b;color:#fff;margin:0;text-align:center}
+.wrap{max-width:900px;margin:40px auto;background:#111;padding:24px;border-radius:18px;box-shadow:0 0 35px rgba(0,255,200,.08)}
+.logo{width:90px;margin-bottom:8px}
+h1{color:#00e0b6;margin:6px 0 10px}
+label,select{display:block;margin:10px auto}
+select{padding:10px;border:none;border-radius:10px;background:#1a1a1a;color:#fff;max-width:95%}
+table{width:100%;border-collapse:collapse;margin-top:14px}
+th,td{padding:10px;border-bottom:1px solid #262626;text-align:right}
+.badge{padding:4px 8px;border-radius:8px;font-size:12px}
+.badge.pending{background:#333;color:#ddd}
+.badge.approved{background:#0a6;color:#fff}
+.badge.rejected{background:#a22;color:#fff}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <img src="logo-full.png" class="logo" alt="شعار صوتنا" />
+    <h1>📋 متابعة المساهم</h1>
+    <label>اختر اسمك:</label>
+    <select id="speakerSelect"><option value="">-- اختر المتحدث --</option></select>
+    <table>
+      <thead><tr><th>النص</th><th>الحالة</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
+const supabase = createClient("https://qcctqvmwwpsoiexgdqwp.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ");
+
+async function loadSpeakers(){
+  const { data, error } = await supabase.from("speakers").select("id,name").order("id");
+  if(error||!data) return alert("تعذر تحميل المتحدثين");
+  const sel=document.getElementById("speakerSelect");
+  data.forEach(sp=>{ const o=document.createElement("option"); o.value=sp.id; o.textContent=sp.name; sel.appendChild(o); });
+}
+loadSpeakers();
+
+document.getElementById("speakerSelect").addEventListener("change", async e=>{
+  const id=e.target.value; const tbody=document.getElementById("tbody");
+  if(!id){tbody.innerHTML="";return;}
+  tbody.innerHTML='<tr><td colspan="2">⏳ جارِ التحميل...</td></tr>';
+  const { data, error } = await supabase
+    .from("recordings")
+    .select("status,texts(content)")
+    .eq("speaker_id",id)
+    .order("created_at",{ascending:false});
+  if(error) return tbody.innerHTML='<tr><td colspan="2">⚠️ خطأ في التحميل</td></tr>';
+  if(!data?.length) return tbody.innerHTML='<tr><td colspan="2">لا توجد تسجيلات بعد.</td></tr>';
+  tbody.innerHTML="";
+  data.forEach(r=>{
+    const tr=document.createElement("tr");
+    const st=r.status||"pending";
+    tr.innerHTML=`<td>${(r.texts?.content||"-").slice(0,120)}</td>
+                  <td><span class="badge ${st}">${st}</span></td>`;
+    tbody.appendChild(tr);
+  });
+});
+</script>
+</body>
+</html>

@@ -3,110 +3,41 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🎙️ تسجيل الأصوات - منصة صوتنا</title>
+<title>🎙️ تسجيل الأصوات - صوتنا</title>
 <style>
-body {
-  font-family: 'Cairo', sans-serif;
-  background: #0b0b0b;
-  color: #fff;
-  text-align: center;
-  margin: 0;
-  padding: 40px 10px;
-}
-.container {
-  max-width: 650px;
-  margin: auto;
-  background: #111;
-  padding: 30px;
-  border-radius: 18px;
-  box-shadow: 0 0 35px rgba(0,255,200,0.1);
-}
-.logo { width: 90px; margin-bottom: 15px; }
-h1 { color: #00e0b6; margin-bottom: 10px; }
-p { color: #ccc; }
-select {
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  margin: 10px;
-  font-size: 16px;
-}
-button {
-  padding: 12px 25px;
-  border: none;
-  border-radius: 12px;
-  margin: 10px 5px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-#startBtn { background: linear-gradient(90deg,#00e0b6,#00b4d8); color: #fff; }
-#stopBtn { background: #ff4d4d; color: #fff; }
-#uploadBtn { background: #666; color: #fff; }
-#nextBtn { background: #00b951; color: #fff; display:none; }
-button:hover { transform: scale(1.05); }
-.text-box {
-  background: #1a1a1a;
-  padding: 15px;
-  border-radius: 10px;
-  margin-top: 20px;
-}
-#volumeBar {
-  width: 100%;
-  height: 10px;
-  background: #222;
-  border-radius: 6px;
-  overflow: hidden;
-  margin: 10px 0;
-}
-#volumeLevel {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg,#00e0b6,#00b4d8);
-  transition: width 0.1s ease;
-}
-.status { font-size: 15px; color: #aaa; margin-top: 10px; }
-.success { color: #00ff91; }
-
-/* الدائرة النابضة */
-#countdownCircle {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 25px auto;
-  border-radius: 50%;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle, #007bff 40%, #0b0b0b 90%);
-  box-shadow: 0 0 30px rgba(0, 255, 200, 0.3);
-  animation: pulse 1s infinite ease-in-out;
-  transition: background 1s linear, box-shadow 1s ease-in-out;
-}
-#countdownCircle span {
-  position: absolute;
-  font-size: 48px;
-  font-weight: bold;
-  color: #fff;
-}
-@keyframes pulse {
-  0% { transform: scale(1); box-shadow: 0 0 25px rgba(0, 255, 200, 0.4); }
-  50% { transform: scale(1.2); box-shadow: 0 0 45px rgba(0, 255, 200, 0.7); }
-  100% { transform: scale(1); box-shadow: 0 0 25px rgba(0, 255, 200, 0.4); }
-}
+body{font-family:'Cairo',sans-serif;background:#0b0b0b;color:#fff;text-align:center;margin:0;padding:40px 10px}
+.container{max-width:650px;margin:auto;background:#111;padding:30px;border-radius:18px;box-shadow:0 0 35px rgba(0,255,200,.1)}
+.logo{width:90px;margin-bottom:15px}
+h1{color:#00e0b6;margin-bottom:10px}
+p{color:#ccc}
+select{padding:10px;border-radius:8px;border:none;margin:10px;font-size:16px;max-width:95%}
+button{padding:12px 25px;border:none;border-radius:12px;margin:10px 5px;font-size:16px;cursor:pointer;transition:.3s}
+#startBtn{background:linear-gradient(90deg,#00e0b6,#00b4d8);color:#fff}
+#stopBtn{background:#ff4d4d;color:#fff}
+#uploadBtn{background:#666;color:#fff}
+#nextBtn{background:#00b951;color:#fff;display:none}
+button:hover{transform:scale(1.05)}
+.text-box{background:#1a1a1a;padding:15px;border-radius:10px;margin-top:20px}
+#volumeBar{width:100%;height:10px;background:#222;border-radius:6px;overflow:hidden;margin:10px 0}
+#volumeLevel{height:100%;width:0%;background:linear-gradient(90deg,#00e0b6,#00b4d8);transition:width .1s ease}
+.status{font-size:15px;color:#aaa;margin-top:10px}
+.success{color:#00ff91}
+#countdownCircle{position:relative;width:120px;height:120px;margin:25px auto;border-radius:50%;display:none;
+  align-items:center;justify-content:center;background:radial-gradient(circle,#007bff 40%,#0b0b0b 90%);
+  box-shadow:0 0 30px rgba(0,255,200,.3);animation:pulse 1s infinite ease-in-out;transition:background 1s linear,box-shadow 1s ease-in-out}
+#countdownCircle span{position:absolute;font-size:48px;font-weight:bold;color:#fff}
+@keyframes pulse{0%{transform:scale(1);box-shadow:0 0 25px rgba(0,255,200,.4)}50%{transform:scale(1.2);box-shadow:0 0 45px rgba(0,255,200,.7)}100%{transform:scale(1);box-shadow:0 0 25px rgba(0,255,200,.4)}}
+audio{width:100%;max-width:580px}
 </style>
 </head>
-
 <body>
 <div class="container">
   <img src="logo-full.png" class="logo" alt="شعار صوتنا" />
-  <h1>🎧 تسجيل الأصوات - منصة صوتنا</h1>
+  <h1>🎧 تسجيل الأصوات</h1>
   <p>اختر اسمك واضغط "ابدأ التسجيل". سيبدأ عدّ تنازلي (3 ثوانٍ) مع تأثيرات صوتية ثم يبدأ التسجيل تلقائيًا.</p>
 
   <label>اختر اسمك:</label>
-  <select id="speakerSelect">
-    <option value="">-- اختر المتحدث --</option>
-  </select>
+  <select id="speakerSelect"><option value="">-- اختر المتحدث --</option></select>
   <p id="speakerStats">...</p>
 
   <div class="text-box">
@@ -118,10 +49,7 @@ button:hover { transform: scale(1.05); }
   <div id="volumeBar"><div id="volumeLevel"></div></div>
   <div class="status" id="volumeStatus">مستوى الصوت: جاهز</div>
 
-  <!-- الدائرة النابضة -->
-  <div id="countdownCircle">
-    <span id="countdownNumber">3</span>
-  </div>
+  <div id="countdownCircle"><span id="countdownNumber">3</span></div>
 
   <button id="startBtn">✏️ ابدأ التسجيل</button>
   <button id="stopBtn" disabled>⏹️ أوقف التسجيل</button>
@@ -133,196 +61,123 @@ button:hover { transform: scale(1.05); }
 </div>
 
 <script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
-const supabase = createClient(
-  "https://qcctqvmwwpsoiexgdqwp.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ"
-);
+import {{ createClient }} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
+const supabase = createClient("https://qcctqvmwwpsoiexgdqwp.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ");
 const BUCKET = "recordings";
 const MAX_TEXTS_PER_SESSION = 5;
 
-let speakers = [];
-let currentTextId = null;
-let selectedSpeaker = null;
-let recordedCount = 0;
-let mediaRecorder, audioChunks = [];
-let audioContext, analyser, gainNode, source;
-let animationFrame;
+let currentTextId = null, selectedSpeaker = null, recordedCount = 0;
+let mediaRecorder, audioChunks = [], audioContext, analyser, gainNode, source, animationFrame;
 
-// 🎵 الأصوات
 const beep1 = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 const beep2 = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 const micReadySound = new Audio("https://actions.google.com/sounds/v1/alarms/transition_complete.ogg");
-beep1.volume = 0.5; beep2.volume = 0.4; micReadySound.volume = 0.35;
+beep1.volume=.5; beep2.volume=.4; micReadySound.volume=.35;
 
-// تحميل أسماء المتحدثين
-async function loadSpeakers() {
-  const { data, error } = await supabase.from("speakers").select("id, name");
-  if (error || !data) return alert("⚠️ فشل تحميل المتحدثين");
-  speakers = data;
-  const select = document.getElementById("speakerSelect");
-  data.forEach(sp => {
-    const opt = document.createElement("option");
-    opt.value = sp.id;
-    opt.textContent = sp.name;
-    select.appendChild(opt);
-  });
-}
+async function loadSpeakers(){{
+  const {{ data, error }} = await supabase.from("speakers").select("id,name").order("id");
+  if(error || !data) return alert("⚠️ فشل تحميل المتحدثين");
+  const sel = document.getElementById("speakerSelect");
+  sel.innerHTML = '<option value="">-- اختر المتحدث --</option>';
+  data.forEach(sp=>{{ const o=document.createElement("option"); o.value=sp.id; o.textContent=sp.name; sel.appendChild(o); }});
+}}
 loadSpeakers();
 
-// عند اختيار المتحدث
-document.getElementById("speakerSelect").addEventListener("change", async (e) => {
-  const id = e.target.value;
-  if (!id) return;
-  selectedSpeaker = id;
-  const { data: recs } = await supabase.from("recordings").select("id").eq("speaker_id", id);
+document.getElementById("speakerSelect").addEventListener("change", async e=>{{
+  const id=e.target.value; if(!id) return; selectedSpeaker=id;
+  const {{ data: recs }} = await supabase.from("recordings").select("id").eq("speaker_id",id);
   recordedCount = recs?.length || 0;
-  document.getElementById("speakerStats").innerHTML =
-    `🎤 لقد سجلت <b>${recordedCount}</b> من أصل <b>${MAX_TEXTS_PER_SESSION}</b> نصوص.`;
+  document.getElementById("speakerStats").innerHTML = `🎤 لقد سجلت <b>${{recordedCount}}</b> من أصل <b>${{MAX_TEXTS_PER_SESSION}}</b> نصوص.`;
   loadNextText();
-});
+}});
 
-// جلب النص التالي
-async function loadNextText() {
-  document.getElementById("nextBtn").style.display = "none";
-  if (recordedCount >= MAX_TEXTS_PER_SESSION) {
-    document.getElementById("recordText").textContent = "✅ لقد أكملت كل النصوص. شكرًا لمساهمتك!";
-    document.getElementById("recordCount").textContent = "";
-    currentTextId = null;
-    return;
-  }
+async function loadNextText(){{
+  document.getElementById("nextBtn").style.display="none";
+  if(recordedCount>=MAX_TEXTS_PER_SESSION){{
+    document.getElementById("recordText").textContent="✅ أكملت نصوصك. شكرًا لمساهمتك!";
+    document.getElementById("recordCount").textContent="";
+    currentTextId=null; return;
+  }}
+  const {{ data, error }} = await supabase.from("texts").select("id,content").order("id",{{ascending:true}}).range(recordedCount, recordedCount);
+  if(error || !data?.length){{ document.getElementById("recordText").textContent="⚠️ لا توجد نصوص متاحة."; return; }}
+  currentTextId=data[0].id;
+  document.getElementById("recordText").textContent=data[0].content;
+  document.getElementById("recordCount").textContent=`النص ${{recordedCount+1}} من ${{MAX_TEXTS_PER_SESSION}}`;
+}}
 
-  const { data, error } = await supabase
-    .from("texts").select("id, content").order("id", { ascending: true })
-    .range(recordedCount, recordedCount);
+async function startCountdown(){{
+  if(!selectedSpeaker || !currentTextId) return alert("يرجى اختيار المتحدث أولًا.");
+  const circle=document.getElementById("countdownCircle");
+  const number=document.getElementById("countdownNumber");
+  circle.style.display="flex"; circle.style.animation="pulse 1s infinite ease-in-out";
+  const colors=["#007bff","#00b4d8","#00e0b6"]; const beeps=[beep1,beep2,beep1];
+  for(let i=3;i>0;i--){{ number.textContent=i; const ci=3-i;
+    circle.style.background=`radial-gradient(circle, ${{colors[ci]}} 40%, #0b0b0b 90%)`;
+    circle.style.boxShadow=`0 0 45px ${{colors[ci]}}80`; beeps[ci].play();
+    await new Promise(r=>setTimeout(r,1000));
+  }}
+  micReadySound.play(); await new Promise(r=>setTimeout(r,500));
+  circle.style.display="none"; startRecording();
+}}
 
-  if (error || !data.length) {
-    document.getElementById("recordText").textContent = "⚠️ لا توجد نصوص متاحة.";
-    return;
-  }
-
-  currentTextId = data[0].id;
-  document.getElementById("recordText").textContent = data[0].content;
-  document.getElementById("recordCount").textContent = `النص ${recordedCount + 1} من ${MAX_TEXTS_PER_SESSION}`;
-}
-
-// العدّ التنازلي بالألوان والمؤثرات
-async function startCountdown() {
-  if (!selectedSpeaker || !currentTextId) {
-    alert("يرجى اختيار المتحدث أولًا.");
-    return;
-  }
-
-  const circle = document.getElementById("countdownCircle");
-  const number = document.getElementById("countdownNumber");
-  circle.style.display = "flex";
-  circle.style.animation = "pulse 1s infinite ease-in-out";
-
-  const colors = ["#007bff", "#00b4d8", "#00e0b6"];
-  const beeps = [beep1, beep2, beep1];
-
-  for (let i = 3; i > 0; i--) {
-    number.textContent = i;
-    const colorIndex = 3 - i;
-    circle.style.background = `radial-gradient(circle, ${colors[colorIndex]} 40%, #0b0b0b 90%)`;
-    circle.style.boxShadow = `0 0 45px ${colors[colorIndex]}80`;
-    beeps[colorIndex].play();
-    await new Promise(r => setTimeout(r, 1000));
-  }
-
-  micReadySound.play();
-  await new Promise(r => setTimeout(r, 500));
-  circle.style.display = "none";
-  startRecording();
-}
-
-// بدء التسجيل
-async function startRecording() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { noiseSuppression: true, echoCancellation: true, autoGainControl: true }
-    });
+async function startRecording(){{
+  try{{
+    const stream = await navigator.mediaDevices.getUserMedia({{audio:{{noiseSuppression:true,echoCancellation:true,autoGainControl:true}}}});
     audioContext = new AudioContext();
     source = audioContext.createMediaStreamSource(stream);
-    gainNode = audioContext.createGain();
-    gainNode.gain.value = 2.0;
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-
-    source.connect(gainNode);
-    gainNode.connect(analyser);
-    const destination = audioContext.createMediaStreamDestination();
-    gainNode.connect(destination);
-
+    gainNode = audioContext.createGain(); gainNode.gain.value = 2.0;
+    analyser = audioContext.createAnalyser(); analyser.fftSize=256;
+    source.connect(gainNode); gainNode.connect(analyser);
+    const destination = audioContext.createMediaStreamDestination(); gainNode.connect(destination);
     mediaRecorder = new MediaRecorder(destination.stream);
-    audioChunks = [];
-    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-    mediaRecorder.onstop = saveRecording;
+    audioChunks=[]; mediaRecorder.ondataavailable=e=>audioChunks.push(e.data); mediaRecorder.onstop=saveRecording;
+    mediaRecorder.start(); visualizeVolume();
+    document.getElementById("startBtn").disabled=true; document.getElementById("stopBtn").disabled=false;
+    document.getElementById("volumeStatus").textContent="🎙️ جاري التسجيل...";
+  }}catch{{ alert("⚠️ لم يتم السماح بالوصول إلى المايكروفون."); }}
+}}
 
-    mediaRecorder.start();
-    visualizeVolume();
-    document.getElementById("startBtn").disabled = true;
-    document.getElementById("stopBtn").disabled = false;
-    document.getElementById("volumeStatus").textContent = "🎙️ جاري التسجيل...";
-  } catch {
-    alert("⚠️ لم يتم السماح بالوصول إلى المايكروفون.");
-  }
-}
+function stopRecording(){{
+  if(mediaRecorder && mediaRecorder.state!=="inactive"){{
+    mediaRecorder.stop(); cancelAnimationFrame(animationFrame);
+    document.getElementById("stopBtn").disabled=true; document.getElementById("uploadBtn").disabled=false;
+    document.getElementById("volumeStatus").textContent="⏹️ تم إيقاف التسجيل.";
+  }}
+}}
 
-function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state !== "inactive") {
-    mediaRecorder.stop();
-    cancelAnimationFrame(animationFrame);
-    document.getElementById("stopBtn").disabled = true;
-    document.getElementById("uploadBtn").disabled = false;
-    document.getElementById("volumeStatus").textContent = "⏹️ تم إيقاف التسجيل.";
-  }
-}
-
-async function saveRecording() {
-  const blob = new Blob(audioChunks, { type: "audio/webm" });
+async function saveRecording(){{
+  const blob = new Blob(audioChunks, {{type:"audio/webm"}});
   const url = URL.createObjectURL(blob);
   const player = document.getElementById("audioPlayer");
-  player.src = url;
-  player.style.display = "block";
-  player.play();
-  document.getElementById("uploadBtn").onclick = () => uploadRecording(blob);
-}
+  player.src=url; player.style.display="block"; player.play();
+  document.getElementById("uploadBtn").onclick = ()=>uploadRecording(blob);
+}}
 
-async function uploadRecording(blob) {
-  const fileName = `speaker_${selectedSpeaker}_text_${currentTextId}_${Date.now()}.webm`;
-  document.getElementById("uploadStatus").textContent = "⏳ جاري رفع التسجيل...";
-  const { error } = await supabase.storage.from(BUCKET).upload(fileName, blob);
-  if (error) return alert("❌ فشل رفع الملف الصوتي");
+async function uploadRecording(blob){{
+  const fileName = `speaker_${{selectedSpeaker}}_text_${{currentTextId}}_${{Date.now()}}.webm`;
+  document.getElementById("uploadStatus").textContent="⏳ جارِ رفع التسجيل...";
+  const {{ error }} = await supabase.storage.from(BUCKET).upload(fileName, blob);
+  if(error) return alert("❌ فشل رفع الملف الصوتي");
+  await supabase.from("recordings").insert([{{speaker_id:selectedSpeaker,text_id:currentTextId,storage_path:fileName,status:"pending"}}]);
+  recordedCount++; document.getElementById("uploadStatus").textContent="✅ تم الرفع بنجاح!";
+  document.getElementById("uploadBtn").disabled=true;
+  const nextBtn=document.getElementById("nextBtn"); nextBtn.style.display="inline-block";
+  const player=document.getElementById("audioPlayer");
+  player.onended = ()=>{{ nextBtn.style.display="none"; loadNextText(); }};
+  nextBtn.onclick = ()=>{{ player.pause(); nextBtn.style.display="none"; loadNextText(); }};
+}}
 
-  await supabase.from("recordings").insert([{ speaker_id: selectedSpeaker, text_id: currentTextId, storage_path: fileName, status: "pending" }]);
-  recordedCount++;
-  document.getElementById("uploadStatus").textContent = "✅ تم الرفع بنجاح!";
-  document.getElementById("uploadBtn").disabled = true;
-  const nextBtn = document.getElementById("nextBtn");
-  nextBtn.style.display = "inline-block";
-
-  const player = document.getElementById("audioPlayer");
-  player.onended = () => { nextBtn.style.display = "none"; loadNextText(); };
-  nextBtn.onclick = () => { player.pause(); nextBtn.style.display = "none"; loadNextText(); };
-}
-
-// تحليل الصوت
-function visualizeVolume() {
-  const dataArray = new Uint8Array(analyser.frequencyBinCount);
-  function draw() {
-    analyser.getByteFrequencyData(dataArray);
-    const avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
-    const volume = Math.min(100,(avg/128)*100);
-    document.getElementById("volumeLevel").style.width = volume + "%";
-    const status = document.getElementById("volumeStatus");
-    if (volume < 20) status.textContent = "🔈 الصوت منخفض";
-    else if (volume > 80) status.textContent = "📢 الصوت عالي جدًا";
-    else status.textContent = "🎤 الصوت جيد";
-    animationFrame = requestAnimationFrame(draw);
-  }
-  draw();
-}
+function visualizeVolume(){{
+  const dataArray=new Uint8Array(analyser.frequencyBinCount);
+  (function draw(){{ analyser.getByteFrequencyData(dataArray);
+    const avg=dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
+    const volume=Math.min(100,(avg/128)*100);
+    document.getElementById("volumeLevel").style.width=volume+"%";
+    const status=document.getElementById("volumeStatus");
+    status.textContent = volume<20 ? "🔈 الصوت منخفض" : (volume>80 ? "📢 الصوت عالي جدًا" : "🎤 الصوت جيد");
+    animationFrame=requestAnimationFrame(draw);
+  }})();
+}}
 
 document.getElementById("startBtn").addEventListener("click", startCountdown);
 document.getElementById("stopBtn").addEventListener("click", stopRecording);

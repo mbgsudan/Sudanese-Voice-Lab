@@ -1,198 +1,37 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>منصة صوتنا</title>
-  <style>
-    :root{
-      --mint:#00ffc3; --blue:#00aaff; --text:#e8f6ff; --muted:#b8c6d1;
-      --bg: rgba(0,0,0,.78);
-    }
-    html,body{height:100%;margin:0;font-family: "Cairo", system-ui, -apple-system, Segoe UI, Roboto, Arial;}
-    body{
-      color:var(--text);
-      background:#0b0f13 url('0dfc3b34-2283-4e1b-aa3a-ebd3e53b5d63.png') no-repeat center/cover;
-      background-attachment: fixed;
-      overflow:hidden;
-    }
-
-    /* شاشة التحميل */
-    .splash{
-      position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-      background:rgba(8,12,16,.9); z-index:9999; transition:opacity .6s ease;
-    }
-    .splash.--hide{opacity:0; pointer-events:none;}
-    .splash__logo{width:120px; height:auto; margin-bottom:18px; filter:drop-shadow(0 6px 18px rgba(0,255,195,.25));}
-    .splash__title{margin:0 0 14px; font-weight:800; letter-spacing:.5px}
-    .pulse{
-      width:64px;height:64px;border-radius:50%;
-      box-shadow:0 0 0 0 rgba(0,255,195,.7);
-      animation:pulse 1.4s infinite;
-    }
-    @keyframes pulse{
-      0%{box-shadow:0 0 0 0 rgba(0,255,195,.7)}
-      70%{box-shadow:0 0 0 28px rgba(0,255,195,0)}
-      100%{box-shadow:0 0 0 0 rgba(0,255,195,0)}
-    }
-    .splash__hint{margin-top:14px;color:var(--muted);font-size:.95rem}
-
-    /* المحتوى */
-    .overlay{position:fixed; inset:0; background:var(--bg); z-index:1;}
-    .content{position:relative; z-index:2; min-height:100vh; display:grid; place-items:center; text-align:center; padding:24px}
-    .card{
-      backdrop-filter: blur(6px);
-      background:rgba(12,16,20,.55);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:18px; padding:30px 22px; max-width:920px; width:100%;
-      box-shadow:0 20px 60px rgba(0,0,0,.35);
-    }
-    .brand{display:flex; gap:12px; align-items:center; justify-content:center; margin-bottom:10px}
-    .brand img{width:82px;height:auto}
-    h1{margin:6px 0 10px; font-size:clamp(1.6rem,2.4vw,2.2rem); color:var(--mint); font-weight:800}
-    p.lead{margin:0 0 22px; color:var(--muted)}
-
-    /* الموجة */
-    .wave{
-      position:relative; height:60px; width:100%; overflow:hidden; margin-bottom:20px;
-    }
-    .wave::before,.wave::after{
-      content:''; position:absolute; left:-50%; width:200%; height:100%;
-      background:radial-gradient(circle at 50% 50%,rgba(0,255,195,.35) 20%,transparent 70%);
-      animation:wave 6s linear infinite;
-    }
-    .wave::after{animation-delay:-3s; opacity:.7}
-    @keyframes wave{
-      from{transform:translateX(0);}
-      to{transform:translateX(50%);}
-    }
-
-    .actions{display:flex; flex-wrap:wrap; gap:14px; justify-content:center; margin-top:8px}
-    .btn{
-      --w:248px;
-      width:var(--w); max-width:95vw; padding:14px 18px; border-radius:12px; border:none;
-      font-size:1.05rem; font-weight:700; cursor:pointer; color:#041218;
-      background:linear-gradient(90deg,var(--mint),var(--blue)); transition:transform .18s ease, filter .18s ease;
-    }
-    .btn:hover{transform:translateY(-2px); filter:brightness(1.04)}
-
-    /* زر عن المشروع */
-    .about-btn{
-      background:transparent;
-      border:1px solid var(--mint);
-      color:var(--mint);
-      font-weight:600;
-      border-radius:10px;
-      padding:10px 18px;
-      margin-top:20px;
-      cursor:pointer;
-      transition:all 0.2s ease;
-    }
-    .about-btn:hover{
-      background:var(--mint);
-      color:#000;
-      transform:scale(1.05);
-    }
-
-    /* النافذة المنبثقة */
-    .modal{
-      position:fixed; inset:0; background:rgba(0,0,0,.75);
-      display:flex; align-items:center; justify-content:center;
-      opacity:0; pointer-events:none; transition:opacity .3s;
-      z-index:999;
-    }
-    .modal.show{opacity:1; pointer-events:auto;}
-    .modal-content{
-      background:#101519;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px;
-      padding:25px 20px;
-      max-width:420px;
-      width:90%;
-      text-align:center;
-      color:var(--text);
-      box-shadow:0 0 40px rgba(0,0,0,.5);
-    }
-    .modal-content h3{color:var(--mint); margin-bottom:10px;}
-    .modal-content p{color:var(--muted); line-height:1.7;}
-    .close-btn{
-      background:var(--blue); border:none; color:#fff; font-weight:700;
-      border-radius:8px; padding:8px 20px; margin-top:15px; cursor:pointer;
-    }
-
-    footer{position:fixed; left:0; right:0; bottom:10px; text-align:center; color:#97a7b3; z-index:2; font-size:.95rem}
-    @media (max-width:560px){
-      .btn{--w: 220px}
-      .brand img{width:70px}
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>صوتنا | الصفحة الرئيسية</title>
+<style>
+  body{font-family:Cairo,Arial,sans-serif;background:#0b0b0b;color:#fff;margin:0}
+  .wrap{max-width:900px;margin:auto;padding:32px}
+  .card{background:#111;border-radius:18px;padding:28px;box-shadow:0 0 35px rgba(0,255,200,.08)}
+  .logo{width:160px;height:auto;display:block;margin:8px auto 18px}
+  h1{text-align:center;color:#00e0b6;margin:0 0 8px}
+  p.meta{text-align:center;color:#aaa;margin:0 0 16px}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px}
+  @media(min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
+  a.btn{display:block;text-decoration:none;text-align:center;padding:14px 18px;border-radius:12px;
+         background:linear-gradient(90deg,#00e0b6,#00b4d8);color:#fff;font-weight:600}
+  a.btn.secondary{background:#1a1a1a;border:1px solid #222}
+  footer{text-align:center;color:#777;margin-top:18px;font-size:13px}
+</style>
 </head>
 <body>
-  <!-- شاشة التحميل -->
-  <div class="splash" role="status" aria-live="polite">
-    <img src="logo-full.png" alt="شعار صوتنا" class="splash__logo" />
-    <h2 class="splash__title">جاري التحميل…</h2>
-    <div class="pulse" aria-hidden="true"></div>
-    <div class="splash__hint">لحظات ونفتح الصفحة الرئيسية 🎧</div>
-  </div>
-
-  <div class="overlay" aria-hidden="true"></div>
-
-  <main class="content">
-    <section class="card" aria-label="الصفحة الرئيسية">
-      <div class="brand">
-        <img src="logo-full.png" alt="شعار صوتنا" />
+  <div class="wrap">
+    <div class="card">
+      <img src="logo-full.png" class="logo" alt="شعار صوتنا" />
+      <h1>منصة <span style="color:#00b4d8">صوتنا</span></h1>
+      <p class="meta">منصة تجمع الأصوات السودانية لبناء قاعدة بيانات لغوية متقدمة لتدريب نماذج الذكاء الاصطناعي باللهجة المحلية.</p>
+      <div class="grid">
+        <a class="btn" href="record.html">🎙️ تسجيل صوت</a>
+        <a class="btn secondary" href="follow.html">📋 متابعة المساهم</a>
+        <a class="btn secondary" href="review.html">🛠️ لوحة المراجعة</a>
       </div>
-      <h1>منصة صوتنا 🔊</h1>
-      <div class="wave"></div>
-      <p class="lead">ساهم بصوتك في بناء أول قاعدة بيانات صوتية سودانية مدعومة بالذكاء الاصطناعي 🇸🇩</p>
-
-      <div class="actions">
-        <a class="btn" href="record.html">🎙️ التسجيل</a>
-        <a class="btn" href="review.html">🛠️ المراجعة</a>
-        <a class="btn" href="progress.html">📊 المتابعة</a>
-      </div>
-
-      <button class="about-btn" id="aboutBtn">ℹ️ عن المشروع</button>
-    </section>
-  </main>
-
-  <!-- النافذة المنبثقة -->
-  <div class="modal" id="aboutModal">
-    <div class="modal-content">
-      <h3>عن مشروع صوتنا</h3>
-      <p>
-        مشروع <strong>صوتنا</strong> يهدف إلى جمع وتوثيق الأصوات السودانية من مختلف اللهجات
-        لبناء قاعدة بيانات صوتية تسهم في تطوير تقنيات الذكاء الاصطناعي والنطق العربي الإفريقي.
-        <br><br>هو مشروع وطني مفتوح، يتيح للجميع المساهمة عبر التسجيل أو المراجعة أو الإشراف.
-      </p>
-      <button class="close-btn" id="closeModal">إغلاق</button>
     </div>
+    <footer>© 2025 صوتنا — جميع الحقوق محفوظة.</footer>
   </div>
-
-  <footer>تم التطوير بواسطة محمد بابكر وفريق صوتنا ✨ 2025</footer>
-
-  <audio id="introSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_80164e7e77.mp3?filename=soft-notification-tone-29369.mp3" preload="auto"></audio>
-
-  <script>
-    const splash = document.querySelector('.splash');
-    const introSound = document.getElementById('introSound');
-    const aboutBtn = document.getElementById('aboutBtn');
-    const modal = document.getElementById('aboutModal');
-    const closeModal = document.getElementById('closeModal');
-
-    function hideSplash(){
-      splash.classList.add('--hide');
-      document.body.style.overflow='auto';
-      introSound.play().catch(()=>{});
-    }
-
-    window.addEventListener('load', () => setTimeout(hideSplash, 600));
-    setTimeout(hideSplash, 3000);
-
-    aboutBtn.onclick = () => modal.classList.add('show');
-    closeModal.onclick = () => modal.classList.remove('show');
-    modal.onclick = e => { if(e.target === modal) modal.classList.remove('show'); };
-  </script>
 </body>
 </html>
