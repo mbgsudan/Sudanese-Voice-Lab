@@ -1,280 +1,157 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>تسجيل الصوت – منصة صوتنا</title>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎙️ تسجيل صوت - صوتنا</title>
 <style>
-  :root{
-    --bg:#0b0b0b; --panel:#111; --muted:#9aa3a9; --text:#eaf2f4;
-    --brand:#00e0c6; --brand2:#00b4d8; --ok:#00c97a; --warn:#ffb703; --err:#ff4d4d;
-  }
-  body{font-family: "Cairo", system-ui, -apple-system, Segoe UI, Arial; background:var(--bg); color:var(--text); margin:0}
-  .wrap{max-width:900px; margin:40px auto; background:var(--panel); padding:28px; border-radius:20px; box-shadow:0 0 40px rgba(0,0,0,.45)}
-  header{display:flex; align-items:center; gap:14px; justify-content:center; margin-bottom:6px}
-  header img{height:62px; width:auto; border-radius:14px}
-  h1{margin:6px 0 14px; text-align:center; color:var(--brand)}
-  p.tip{color:var(--muted); text-align:center; margin-top:0}
-  .row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:16px 0}
-  select, input[type=text]{background:#1a1a1a; color:var(--text); border:1px solid #222; border-radius:12px; padding:10px 12px; min-width:240px}
-  .board{background:#0f1314; border:1px dashed #234; border-radius:16px; padding:18px; margin:18px 0}
-  .board h3{margin:0 0 8px; color:var(--brand)}
-  .sentence{font-size:22px; line-height:1.7}
-  .meter-wrap{height:10px; background:#1a2124; border-radius:999px; overflow:hidden; margin:14px 0}
-  .meter{height:100%; width:0%; background:linear-gradient(90deg, var(--brand), var(--brand2)); transition:width .08s}
-  .soft{color:var(--warn)}
-  .danger{color:var(--err)}
-  .success{color:var(--ok)}
-  .center{text-align:center}
-  button{border:0; border-radius:14px; padding:12px 20px; font-size:16px; cursor:pointer}
-  .btn{background:#2a2f32; color:var(--text)}
-  .btn-start{background:linear-gradient(90deg, var(--brand), var(--brand2)); color:#062; color:#083; color:#062}
-  .btn-stop{background:#ff6b6b; color:#120}
-  .btn-upload{background:#2d6a4f}
-  .note{font-size:14px; color:#aeb9be; margin-top:8px}
-  audio{width:100%}
-  .mini{font-size:13px;color:#9fb}
+body{font-family:Cairo,Arial,sans-serif;background:#0b0b0b;color:#fff;margin:0;padding:0;text-align:center}
+.container{max-width:600px;margin:40px auto;background:#111;padding:25px;border-radius:18px;box-shadow:0 0 25px rgba(0,0,0,.5)}
+h1{color:#00e0b6;margin-bottom:15px}
+h2{color:#ccc;font-weight:500}
+button{background:#00e0b6;color:#111;border:none;padding:12px 24px;margin:10px;border-radius:10px;font-size:16px;cursor:pointer}
+button:disabled{background:#333;color:#888;cursor:not-allowed}
+.meter{height:12px;background:#333;border-radius:6px;overflow:hidden;margin-top:10px}
+.meter div{height:100%;background:#00e0b6;width:0%;transition:width 0.1s}
+#levelLabel{margin-top:8px;font-size:14px}
+.danger{color:#ff4d4d}
+.soft{color:#ffb703}
+.mini{color:#00e0b6}
+audio{margin-top:20px;width:100%}
+#textBox{margin-top:20px;font-size:18px;background:#1a1a1a;padding:10px;border-radius:8px}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="container">
+  <img src="logo-full.png" alt="شعار صوتنا" style="width:120px;margin-bottom:10px">
+  <h1>🎙️ تسجيل صوتك باللهجة السودانية</h1>
+  <h2 id="speakerName"></h2>
 
-  <header>
-    <!-- استخدم نفس اسم شعارك في المستودع -->
-    <img src="logo-full.png" alt="شعار صوتنا" />
-    <h1>تسجيل الصوت – منصة صوتنا 🎙️</h1>
-  </header>
+  <div id="textBox">⏳ جارِ تحميل النص...</div>
 
-  <p class="tip">اختر اسمك ثم اضغط “ابدأ التسجيل”. سنعرض عدًّا تنازليًا مع تنبيه ثم يبدأ التسجيل تلقائيًا.  
-  هذه الصفحة تحسّن صوتك وتمنع الرفع إن كان منخفضًا جدًا.</p>
+  <div class="meter"><div id="meterBar"></div></div>
+  <p id="levelLabel">جاري تهيئة الميكروفون...</p>
 
-  <div class="row">
-    <label>اختر اسمك:
-      <select id="speakerSelect"><option value="">جارِ تحميل الأسماء…</option></select>
-    </label>
-    <label>جلسة التسجيل:
-      <input id="sessionCode" type="text" placeholder="S-2025-11-10-A" />
-    </label>
-    <label>نوع الميكروفون:
-      <input id="micType" type="text" placeholder="USB / Headset / Built-in" />
-    </label>
+  <div style="margin-top:15px">
+    <button id="startBtn">ابدأ التسجيل</button>
+    <button id="stopBtn" disabled>أوقف التسجيل</button>
   </div>
 
-  <div class="board">
-    <h3>النص الحالي:</h3>
-    <div id="textBox" class="sentence">جارِ تحميل النص…</div>
-    <div class="note" id="textNote">سيظهر نص جديد بعد قبول تسجيلك على هذا النص.</div>
-  </div>
-
-  <div class="meter-wrap" title="مستوى الصوت المباشر">
-    <div id="meter" class="meter"></div>
-  </div>
-  <div class="center">
-    <span id="levelLabel" class="mini">جاهز: الصوت ضمن المدى</span>
-  </div>
-
-  <div class="row center">
-    <button id="btnStart" class="btn-start">🎙️ ابدأ التسجيل</button>
-    <button id="btnStop" class="btn-stop" disabled>⏹️ أوقف التسجيل</button>
-    <button id="btnUpload" class="btn-upload" disabled>⬆️ ارفع التسجيل</button>
-  </div>
-
-  <div id="status" class="center note">لم يبدأ التسجيل بعد.</div>
-
-  <div id="playerWrap" class="board" style="display:none">
-    <h3>المعاينة:</h3>
-    <audio id="player" controls></audio>
-  </div>
-
+  <audio id="player" controls style="display:none"></audio>
+  <button id="uploadBtn" style="display:none">📤 إرسال التسجيل</button>
 </div>
 
 <script type="module">
-/* ===== Supabase ===== */
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
-const SUPABASE_URL = "https://qcctqvmwwpsoiexgdqwp.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ";
+
+const supabase = createClient(
+  "https://qcctqvmwwpsoiexgdqwp.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ"
+);
 const BUCKET = "recordings";
-const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/* ===== عناصر ===== */
-const speakerSelect = document.getElementById("speakerSelect");
-const sessionCode   = document.getElementById("sessionCode");
-const micType       = document.getElementById("micType");
-const textBox       = document.getElementById("textBox");
-const meterEl       = document.getElementById("meter");
-const levelLabel    = document.getElementById("levelLabel");
-const btnStart      = document.getElementById("btnStart");
-const btnStop       = document.getElementById("btnStop");
-const btnUpload     = document.getElementById("btnUpload");
-const statusEl      = document.getElementById("status");
-const playerWrap    = document.getElementById("playerWrap");
-const player        = document.getElementById("player");
+let mediaRecorder, chunks=[], mediaStream, audioCtx, analyser, gainNode;
+let rmsSum=0,rmsCount=0,avgRMS=0,levelTimer;
+const meterEl=document.getElementById("meterBar");
+const levelLabel=document.getElementById("levelLabel");
+const textBox=document.getElementById("textBox");
+const startBtn=document.getElementById("startBtn");
+const stopBtn=document.getElementById("stopBtn");
+const uploadBtn=document.getElementById("uploadBtn");
+const player=document.getElementById("player");
 
-/* ===== حالة التسجيل ===== */
-let mediaStream, mediaRecorder, chunks=[];
-let audioCtx, srcNode, gainNode, analyser;
-let levelTimer, rmsSum=0, rmsCount=0, avgRMS=0;
-let currentText=null, currentSpeaker=null;
-let isRecording=false;
+let currentTextId=null;
+let currentSpeaker=null;
 
-/* عتبات الجودة */
-const MIN_DURATION_MS = 2500;        // أقل مدة محسوبة
-const MIN_AVG_RMS     = 0.028;       // لو المتوسط أقل → نرفض (0.02–0.03 مناسب للموبايلات)
-const GAIN_VALUE      = 1.35;        // تكبير خفيف للصوت
-
-/* ===== تهيئة ===== */
-await loadSpeakers();
-await pickText();
-
-async function loadSpeakers(){
-  const { data, error } = await db.from("speakers").select("id, name").order("name");
-  speakerSelect.innerHTML = "";
-  if(error || !data?.length){
-    speakerSelect.innerHTML = `<option value="">لا توجد أسماء</option>`;
-    return;
-  }
-  speakerSelect.innerHTML = `<option value="">— اختر المتحدث —</option>` + 
-    data.map(s=>`<option value="${s.id}">${s.name}</option>`).join("");
+/* === تحميل المتحدث والنص === */
+async function initData(){
+  const { data:speakers } = await supabase.from("speakers").select("id,name").limit(1);
+  currentSpeaker = speakers?.[0] || {id:null,name:"غير محدد"};
+  document.getElementById("speakerName").textContent = `المتحدث: ${currentSpeaker.name}`;
+  await loadNextText();
 }
 
-async function pickText(){
-  // نص عشوائي متاح
-  const { data, error } = await db.from("texts").select("id, code, content").limit(1).order("created_at", { ascending:false });
-  if(error || !data?.length){ textBox.textContent="لا يوجد نص متاح الآن."; return; }
-  currentText = data[0];
-  textBox.textContent = currentText.content;
+async function loadNextText(){
+  const { data:texts } = await supabase.from("texts").select("id,content").limit(1);
+  if(!texts?.length){textBox.textContent="لا توجد نصوص متاحة الآن.";return;}
+  currentTextId=texts[0].id;
+  textBox.textContent=texts[0].content;
 }
 
-/* ===== الصوت الحي و القياس ===== */
+/* === تهيئة الصوت بدون صدى === */
 async function prepareAudio(){
   mediaStream = await navigator.mediaDevices.getUserMedia({
-    audio: { noiseSuppression: true, echoCancellation: true, autoGainControl: false },
+    audio:{
+      noiseSuppression:true,
+      echoCancellation:true,
+      autoGainControl:false
+    },
     video:false
   });
   audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  srcNode  = audioCtx.createMediaStreamSource(mediaStream);
-  gainNode = audioCtx.createGain(); gainNode.gain.value = GAIN_VALUE;
-  analyser = audioCtx.createAnalyser(); analyser.fftSize = 1024;
+  const srcNode=audioCtx.createMediaStreamSource(mediaStream);
+  gainNode=audioCtx.createGain();
+  gainNode.gain.value=1.2;
+  analyser=audioCtx.createAnalyser();
+  analyser.fftSize=1024;
+  srcNode.connect(gainNode).connect(analyser); // بدون إخراج الصوت للسماعات
 
-  srcNode.connect(gainNode).connect(analyser).connect(audioCtx.destination);
-
-  // مؤشّر المستوى
-  const buf = new Uint8Array(analyser.fftSize);
-  levelTimer = setInterval(()=>{
+  const buf=new Uint8Array(analyser.fftSize);
+  levelTimer=setInterval(()=>{
     analyser.getByteTimeDomainData(buf);
-    // RMS من موجة الزمن
     let sum=0;
-    for(let i=0;i<buf.length;i++){
-      const v = (buf[i]-128)/128; // −1..+1
-      sum += v*v;
-    }
-    const rms = Math.sqrt(sum/buf.length);
-    rmsSum += rms; rmsCount++; avgRMS = rmsSum/Math.max(1,rmsCount);
-
-    const pct = Math.min(100, Math.round(rms*180)); // تحويل لمؤشر
-    meterEl.style.width = pct + "%";
-
-    if(rms < 0.018) { levelLabel.textContent = "الصوت منخفض جدًا – قرّب المايك أو تكلّم أعلى"; levelLabel.className="danger"; }
-    else if(rms < 0.03){ levelLabel.textContent = "الصوت منخفض قليلًا – الأفضل تتكلم أعلى"; levelLabel.className="soft"; }
-    else { levelLabel.textContent = "جاهز: الصوت ضمن المدى"; levelLabel.className="mini"; }
-  }, 80);
+    for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128;sum+=v*v;}
+    const rms=Math.sqrt(sum/buf.length);
+    rmsSum+=rms;rmsCount++;avgRMS=rmsSum/Math.max(1,rmsCount);
+    const pct=Math.min(100,Math.round(rms*180));
+    meterEl.style.width=pct+"%";
+    if(rms<0.018){levelLabel.textContent="الصوت منخفض جدًا – قرّب المايك";levelLabel.className="danger";}
+    else if(rms<0.03){levelLabel.textContent="الصوت منخفض قليلًا";levelLabel.className="soft";}
+    else{levelLabel.textContent="✅ الصوت ممتاز، يمكنك البدء";levelLabel.className="mini";}
+  },80);
 }
 
-function cleanupAudio(){
-  clearInterval(levelTimer);
-  if(mediaStream) mediaStream.getTracks().forEach(t=>t.stop());
-  if(audioCtx) audioCtx.close();
-  mediaStream = audioCtx = srcNode = gainNode = analyser = null;
-  rmsSum=0; rmsCount=0; avgRMS=0;
-  meterEl.style.width = "0%";
-}
-
-/* ===== التسجيل ===== */
-btnStart.onclick = async()=>{
-  if(!speakerSelect.value){ alert("الرجاء اختيار اسم المتحدث."); return; }
-  if(!currentText){ alert("النص غير جاهز الآن."); return; }
-  currentSpeaker = Number(speakerSelect.value);
-
-  btnStart.disabled = true; btnStop.disabled = false; btnUpload.disabled = true;
-  statusEl.textContent = "⏳ تجهيز الصوت…";
+/* === التسجيل === */
+startBtn.onclick=async()=>{
+  chunks=[];
   await prepareAudio();
-
-  chunks = [];
-  mediaRecorder = new MediaRecorder(mediaStream, { mimeType:"audio/webm" });
-  const startedAt = Date.now();
-
-  mediaRecorder.ondataavailable = e=>{ if(e.data.size) chunks.push(e.data); };
-  mediaRecorder.onstop = ()=>{
-    isRecording=false; btnStop.disabled = true;
-
-    const duration = Date.now() - startedAt;
-    const blob = new Blob(chunks, { type:"audio/webm" });
-
-    // قرار الجودة: المدة + متوسط RMS
-    if(duration < MIN_DURATION_MS){
-      statusEl.innerHTML = "⚠️ التسجيل قصير جدًا. أعد المحاولة مع جملة كاملة بوضوح.";
-      btnStart.disabled = false; cleanupAudio(); return;
-    }
-    if(avgRMS < MIN_AVG_RMS){
-      statusEl.innerHTML = "❌ التسجيل منخفض جدًا (تم رفضه تلقائيًا). اقترب من الميكروفون أو ارفع صوتك ثم سجّل مجددًا.";
-      btnStart.disabled = false; cleanupAudio(); return;
-    }
-
-    // جاهز للرفع
-    const url = URL.createObjectURL(blob);
-    player.src = url; playerWrap.style.display="block";
-    btnUpload.disabled = false;
-    statusEl.innerHTML = "✅ التسجيل جيد — يمكنك رفعه الآن.";
-    cleanupAudio();
+  mediaRecorder=new MediaRecorder(mediaStream);
+  mediaRecorder.ondataavailable=e=>chunks.push(e.data);
+  mediaRecorder.onstop=()=>{
+    clearInterval(levelTimer);
+    const blob=new Blob(chunks,{type:"audio/webm"});
+    player.src=URL.createObjectURL(blob);
+    player.style.display="block";
+    uploadBtn.style.display="inline-block";
   };
+  mediaRecorder.start();
+  startBtn.disabled=true;stopBtn.disabled=false;
+  levelLabel.textContent="جارِ التسجيل... تحدث الآن 🎤";
+}
+stopBtn.onclick=()=>{
+  mediaRecorder.stop();
+  startBtn.disabled=false;stopBtn.disabled=true;
+}
 
-  mediaRecorder.start(100);
-  isRecording=true;
-  statusEl.textContent = "🔴 نسجّل الآن… تحدّث بوضوح قرب الميكروفون.";
+/* === رفع التسجيل === */
+uploadBtn.onclick=async()=>{
+  const blob=new Blob(chunks,{type:"audio/webm"});
+  const fileName=`rec_${Date.now()}.webm`;
+  const { error }=await supabase.storage.from(BUCKET).upload(fileName,blob);
+  if(error){alert("فشل في رفع التسجيل");return;}
+  await supabase.from("recordings").insert({
+    speaker_id:currentSpeaker.id,
+    text_id:currentTextId,
+    storage_path:fileName,
+    status:"pending"
+  });
+  alert("✅ تم إرسال التسجيل بنجاح");
+  player.style.display="none";
+  uploadBtn.style.display="none";
+  await loadNextText();
 };
 
-btnStop.onclick = ()=>{
-  if(isRecording && mediaRecorder?.state==="recording"){
-    mediaRecorder.stop();
-    statusEl.textContent = "⏸️ تم إيقاف التسجيل.";
-  }
-};
-
-btnUpload.onclick = async()=>{
-  btnUpload.disabled = true;
-  statusEl.textContent = "⬆️ جارِ رفع التسجيل…";
-  try{
-    // كوّن Blob من المقاطع (آخر تسجيل)
-    const blob = new Blob(chunks, { type:"audio/webm" });
-    const fileName = `${new Date().toISOString().slice(0,10)}/${currentSpeaker}/${currentText.code || "TXT"}-${Date.now()}.webm`;
-    const path = `user/${fileName}`;
-
-    const { error:upErr } = await db.storage.from("recordings").upload(path, blob, { contentType:"audio/webm", upsert:false });
-    if(upErr) throw upErr;
-
-    const meta = {
-      speaker_id: currentSpeaker,
-      text_id: currentText.id,
-      session_id: sessionCode.value?.trim() || null,
-      mic_type: micType.value?.trim() || null,
-      storage_path: path,
-      status: "pending"
-    };
-    const { error:insErr } = await db.from("recordings").insert(meta);
-    if(insErr) throw insErr;
-
-    statusEl.innerHTML = "🎉 تم الرفع بنجاح، سيتم مراجعة تسجيلك قريبًا.";
-    // اختر نصًا جديدًا
-    await pickText();
-    btnStart.disabled = false;
-    btnUpload.disabled = true;
-  }catch(e){
-    console.error(e);
-    statusEl.innerHTML = "❌ فشل الرفع. تأكد من الاتصال وجرّب مرة أخرى.";
-    btnUpload.disabled = false;
-  }
-};
+initData();
 </script>
 </body>
 </html>
