@@ -1,157 +1,406 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎙️ تسجيل صوت - صوتنا</title>
-<style>
-body{font-family:Cairo,Arial,sans-serif;background:#0b0b0b;color:#fff;margin:0;padding:0;text-align:center}
-.container{max-width:600px;margin:40px auto;background:#111;padding:25px;border-radius:18px;box-shadow:0 0 25px rgba(0,0,0,.5)}
-h1{color:#00e0b6;margin-bottom:15px}
-h2{color:#ccc;font-weight:500}
-button{background:#00e0b6;color:#111;border:none;padding:12px 24px;margin:10px;border-radius:10px;font-size:16px;cursor:pointer}
-button:disabled{background:#333;color:#888;cursor:not-allowed}
-.meter{height:12px;background:#333;border-radius:6px;overflow:hidden;margin-top:10px}
-.meter div{height:100%;background:#00e0b6;width:0%;transition:width 0.1s}
-#levelLabel{margin-top:8px;font-size:14px}
-.danger{color:#ff4d4d}
-.soft{color:#ffb703}
-.mini{color:#00e0b6}
-audio{margin-top:20px;width:100%}
-#textBox{margin-top:20px;font-size:18px;background:#1a1a1a;padding:10px;border-radius:8px}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>تسجيل صوتك باللهجة السودانية | صوتنا</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0b0b; --card:#111; --mute:#222;
+      --text:#e9f0f1; --muted:#aab7b8;
+      --brand:#00e0c6; --brand2:#00b4d8; --ok:#1dd1a1; --warn:#ff6b6b;
+      --glow: 0 0 25px rgba(0,224,198,.35), 0 0 60px rgba(0,180,216,.25);
+    }
+    *{box-sizing:border-box}
+    html,body{background:var(--bg);color:var(--text);margin:0;font-family:'Cairo',system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .wrap{max-width:920px;margin:0 auto;padding:24px}
+    .card{background:var(--card);border-radius:20px;padding:28px 20px;box-shadow:0 10px 60px rgba(0,0,0,.35);position:relative;overflow:hidden}
+    header{display:flex;align-items:center;gap:14px;justify-content:center;margin-top:8px}
+    header img{width:96px;height:96px;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+    h1{margin:.25rem 0 0;font-size:clamp(22px,3.5vw,34px);font-weight:800;letter-spacing:.4px}
+    .hint{color:var(--muted);text-align:center;margin:8px auto 18px;max-width:720px;line-height:1.8}
+    .row{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
+    select, input[type=text]{background:#0f1314;border:1px solid #263238;color:var(--text);padding:10px 12px;border-radius:12px;min-width:240px;outline:none}
+    .pill{display:inline-flex;align-items:center;gap:8px;background:#0e1516;border:1px dashed #1f2a2c;padding:8px 12px;border-radius:999px;color:var(--muted);font-size:14px}
+    .textBox{margin:18px auto 8px;background:#0f1314;border:1px solid #223136;border-radius:16px;padding:18px}
+    .textBox h3{margin:0 0 10px;color:var(--brand)}
+    .textBox p{margin:8px 0 0;font-size:20px;line-height:2}
+    .meter{height:10px;background:#0f1314;border:1px solid #223136;border-radius:999px;overflow:hidden}
+    .meter > span{display:block;height:100%;width:0%;background:linear-gradient(90deg,#2ecc71,#f1c40f,#e67e22,#e74c3c)}
+    .buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+    button{border:0;border-radius:14px;color:#fff;font-weight:700;cursor:pointer;padding:12px 18px;min-width:160px;transition:transform .04s ease, box-shadow .2s ease, opacity .2s ease}
+    .start{background:linear-gradient(90deg,var(--brand),var(--brand2));box-shadow:var(--glow)}
+    .start.glow{animation:pulse 1.2s ease-in-out infinite}
+    @keyframes pulse{0%{box-shadow:0 0 0 rgba(0,224,198,.0)}50%{box-shadow:var(--glow)}100%{box-shadow:0 0 0 rgba(0,224,198,.0)}}
+    .stop{background:#3a3f44}
+    .upload{background:var(--ok)}
+    .disabled{opacity:.55;pointer-events:none;filter:grayscale(.2)}
+    .status{margin-top:10px;text-align:center;color:var(--muted)}
+    .badge{font-size:13px;display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid #254248;background:#0f1a1a;color:#8de0d4}
+    .bar{height:6px;border-radius:999px;background:#142224;overflow:hidden}
+    .bar>i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#00e0c6,#00b4d8)}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50}
+    .count{background:#0f1314;border:1px solid #1f3134;padding:26px 32px;border-radius:20px;text-align:center;box-shadow:var(--glow)}
+    .count h2{margin:0 0 6px}
+    .count .big{font-size:56px;font-weight:800;margin:4px 0 0;color:#fff}
+    .footerNote{margin-top:18px;text-align:center;color:#819499;font-size:13px}
+    .success{color:#25d39c}
+    .error{color:#ff7b7b}
+    .ghost{display:none}
+  </style>
 </head>
 <body>
-<div class="container">
-  <img src="logo-full.png" alt="شعار صوتنا" style="width:120px;margin-bottom:10px">
-  <h1>🎙️ تسجيل صوتك باللهجة السودانية</h1>
-  <h2 id="speakerName"></h2>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <img src="logo-full.png" alt="شعار صوتنا" />
+        <div>
+          <h1>تسجيل صوتك باللهجة السودانية 🎙️</h1>
+        </div>
+      </header>
 
-  <div id="textBox">⏳ جارِ تحميل النص...</div>
+      <p class="hint">
+        اختر اسمك واضغط <strong>ابدأ التسجيل</strong>. سيظهر عدّ تنازلي (3 ثوانٍ) مع تنبيه صوتي ثم يبدأ التسجيل تلقائيًا.
+        تحدّث بوضوح بالقرب من الميكروفون. يمكنك إعادة المحاولة ثم رفع التسجيل.
+      </p>
 
-  <div class="meter"><div id="meterBar"></div></div>
-  <p id="levelLabel">جاري تهيئة الميكروفون...</p>
+      <div class="row">
+        <label class="pill">المتحدّث:
+          <select id="speakerSelect" title="اختر اسم المتحدث"></select>
+        </label>
 
-  <div style="margin-top:15px">
-    <button id="startBtn">ابدأ التسجيل</button>
-    <button id="stopBtn" disabled>أوقف التسجيل</button>
+        <label class="pill">نوع الميكروفون:
+          <input type="text" id="micType" placeholder="USB / هاتف / لابتوب" style="min-width:180px">
+        </label>
+
+        <span class="badge" id="totalsBadge">إجمالي تسجيلات المنصّة: <b id="totalCount">—</b></span>
+      </div>
+
+      <div class="textBox">
+        <h3>النص الحالي:</h3>
+        <p id="currentText">… جارِ تحميل النص</p>
+        <div class="bar" style="margin-top:10px"><i id="progressBar"></i></div>
+        <div class="status">
+          <span id="attemptsInfo">المحاولات لهذا النص: —</span>
+          <span style="margin:0 8px">•</span>
+          <span id="speakerStats">سجّلت بصوتك: — ملف</span>
+        </div>
+      </div>
+
+      <div class="meter" title="مستوى الميكروفون"><span id="vu"></span></div>
+      <p class="status" id="micStatus">جارِ تهيئة الميكروفون…</p>
+
+      <div class="buttons">
+        <button id="startBtn" class="start disabled">ابدأ التسجيل ✍️</button>
+        <button id="stopBtn" class="stop disabled">أوقف التسجيل ⏹️</button>
+        <button id="uploadBtn" class="upload disabled">ارفع التسجيل ⬆️</button>
+      </div>
+
+      <p class="status" id="saveStatus"></p>
+      <p class="footerNote">✨ بعد رفع التسجيل بنجاح، سيظهر نص جديد تلقائيًا.</p>
+    </div>
   </div>
 
-  <audio id="player" controls style="display:none"></audio>
-  <button id="uploadBtn" style="display:none">📤 إرسال التسجيل</button>
-</div>
+  <!-- العدّ التنازلي -->
+  <div class="overlay" id="overlay">
+    <div class="count">
+      <h2>استعد… التسجيل بعد</h2>
+      <div class="big" id="countNum">3</div>
+    </div>
+  </div>
 
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
+  <!-- مشغل مخفي لمعاينة التسجيل بعد الإيقاف -->
+  <audio id="preview" class="ghost" controls></audio>
 
-const supabase = createClient(
-  "https://qcctqvmwwpsoiexgdqwp.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ"
-);
-const BUCKET = "recordings";
+  <!-- Supabase -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
 
-let mediaRecorder, chunks=[], mediaStream, audioCtx, analyser, gainNode;
-let rmsSum=0,rmsCount=0,avgRMS=0,levelTimer;
-const meterEl=document.getElementById("meterBar");
-const levelLabel=document.getElementById("levelLabel");
-const textBox=document.getElementById("textBox");
-const startBtn=document.getElementById("startBtn");
-const stopBtn=document.getElementById("stopBtn");
-const uploadBtn=document.getElementById("uploadBtn");
-const player=document.getElementById("player");
+    // === إعداد Supabase ===
+    const SUPABASE_URL = "https://qcctqvmwwpsoiexgdqwp.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ";
+    const BUCKET = "recordings";
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let currentTextId=null;
-let currentSpeaker=null;
+    // === عناصر الواجهة ===
+    const speakerSelect = document.getElementById("speakerSelect");
+    const micType = document.getElementById("micType");
+    const totalsBadge = document.getElementById("totalCount");
+    const currentText = document.getElementById("currentText");
+    const attemptsInfo = document.getElementById("attemptsInfo");
+    const speakerStats = document.getElementById("speakerStats");
+    const vuBar = document.getElementById("vu");
+    const micStatus = document.getElementById("micStatus");
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const saveStatus = document.getElementById("saveStatus");
+    const overlay = document.getElementById("overlay");
+    const countNum = document.getElementById("countNum");
+    const preview = document.getElementById("preview");
+    const progressBar = document.getElementById("progressBar");
 
-/* === تحميل المتحدث والنص === */
-async function initData(){
-  const { data:speakers } = await supabase.from("speakers").select("id,name").limit(1);
-  currentSpeaker = speakers?.[0] || {id:null,name:"غير محدد"};
-  document.getElementById("speakerName").textContent = `المتحدث: ${currentSpeaker.name}`;
-  await loadNextText();
-}
+    // === حالة التطبيق ===
+    let audioCtx, mediaStream, sourceNode, hpFilter, lpFilter, compressor, analyser, dest, recorder;
+    let chunks = [];
+    let recordingBlob = null;
+    let activeSpeaker = null;
+    let activeText = null;
+    let rafId = null;
 
-async function loadNextText(){
-  const { data:texts } = await supabase.from("texts").select("id,content").limit(1);
-  if(!texts?.length){textBox.textContent="لا توجد نصوص متاحة الآن.";return;}
-  currentTextId=texts[0].id;
-  textBox.textContent=texts[0].content;
-}
+    // === أدوات مساعدة ===
+    const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+    const uuid = ()=>crypto.randomUUID ? crypto.randomUUID() : (Date.now()+"-"+Math.random().toString(16).slice(2));
+    function fmtDateStamp(){
+      const d = new Date();
+      const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${day}`;
+    }
 
-/* === تهيئة الصوت بدون صدى === */
-async function prepareAudio(){
-  mediaStream = await navigator.mediaDevices.getUserMedia({
-    audio:{
-      noiseSuppression:true,
-      echoCancellation:true,
-      autoGainControl:false
-    },
-    video:false
-  });
-  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  const srcNode=audioCtx.createMediaStreamSource(mediaStream);
-  gainNode=audioCtx.createGain();
-  gainNode.gain.value=1.2;
-  analyser=audioCtx.createAnalyser();
-  analyser.fftSize=1024;
-  srcNode.connect(gainNode).connect(analyser); // بدون إخراج الصوت للسماعات
+    // توليد صفارة قصيرة
+    function beep(){
+      if(!audioCtx) return;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "sine"; o.frequency.value = 880;
+      g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.4, audioCtx.currentTime+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+0.15);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime+0.16);
+    }
 
-  const buf=new Uint8Array(analyser.fftSize);
-  levelTimer=setInterval(()=>{
-    analyser.getByteTimeDomainData(buf);
-    let sum=0;
-    for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128;sum+=v*v;}
-    const rms=Math.sqrt(sum/buf.length);
-    rmsSum+=rms;rmsCount++;avgRMS=rmsSum/Math.max(1,rmsCount);
-    const pct=Math.min(100,Math.round(rms*180));
-    meterEl.style.width=pct+"%";
-    if(rms<0.018){levelLabel.textContent="الصوت منخفض جدًا – قرّب المايك";levelLabel.className="danger";}
-    else if(rms<0.03){levelLabel.textContent="الصوت منخفض قليلًا";levelLabel.className="soft";}
-    else{levelLabel.textContent="✅ الصوت ممتاز، يمكنك البدء";levelLabel.className="mini";}
-  },80);
-}
+    // شريط VU
+    function startMeter(){
+      const buffer = new Uint8Array(128);
+      function tick(){
+        if(!analyser){ vuBar.style.width="0%"; return; }
+        analyser.getByteTimeDomainData(buffer);
+        // حساب RMS بسيط
+        let sum=0; for(const v of buffer){ const x=(v-128)/128; sum+=x*x; }
+        const rms = Math.sqrt(sum/buffer.length);
+        const pct = Math.min(100, Math.max(0, Math.round(rms*160))); // تضخيم خفيف
+        vuBar.style.width = pct + "%";
+        rafId = requestAnimationFrame(tick);
+      }
+      cancelAnimationFrame(rafId); tick();
+    }
 
-/* === التسجيل === */
-startBtn.onclick=async()=>{
-  chunks=[];
-  await prepareAudio();
-  mediaRecorder=new MediaRecorder(mediaStream);
-  mediaRecorder.ondataavailable=e=>chunks.push(e.data);
-  mediaRecorder.onstop=()=>{
-    clearInterval(levelTimer);
-    const blob=new Blob(chunks,{type:"audio/webm"});
-    player.src=URL.createObjectURL(blob);
-    player.style.display="block";
-    uploadBtn.style.display="inline-block";
-  };
-  mediaRecorder.start();
-  startBtn.disabled=true;stopBtn.disabled=false;
-  levelLabel.textContent="جارِ التسجيل... تحدث الآن 🎤";
-}
-stopBtn.onclick=()=>{
-  mediaRecorder.stop();
-  startBtn.disabled=false;stopBtn.disabled=true;
-}
+    // تهيئة الميكروفون + سلسلة معالجة للصوت
+    async function initMic(){
+      micStatus.textContent = "جارِ تهيئة الميكروفون…";
+      try{
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio:{
+            echoCancellation:true,
+            noiseSuppression:true,
+            autoGainControl:true,
+            channelCount:1,
+            sampleRate:48000
+          },
+          video:false
+        });
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        sourceNode = audioCtx.createMediaStreamSource(mediaStream);
 
-/* === رفع التسجيل === */
-uploadBtn.onclick=async()=>{
-  const blob=new Blob(chunks,{type:"audio/webm"});
-  const fileName=`rec_${Date.now()}.webm`;
-  const { error }=await supabase.storage.from(BUCKET).upload(fileName,blob);
-  if(error){alert("فشل في رفع التسجيل");return;}
-  await supabase.from("recordings").insert({
-    speaker_id:currentSpeaker.id,
-    text_id:currentTextId,
-    storage_path:fileName,
-    status:"pending"
-  });
-  alert("✅ تم إرسال التسجيل بنجاح");
-  player.style.display="none";
-  uploadBtn.style.display="none";
-  await loadNextText();
-};
+        // فلترة بسيطة + ضغط خفيف
+        hpFilter = audioCtx.createBiquadFilter();
+        hpFilter.type = "highpass"; hpFilter.frequency.value = 120; // قصّ ضجيج منخفض
 
-initData();
-</script>
+        lpFilter = audioCtx.createBiquadFilter();
+        lpFilter.type = "lowpass"; lpFilter.frequency.value = 8000; // قصّ حاد فوق 8 كHz لتقليل الهس
+
+        compressor = audioCtx.createDynamicsCompressor();
+        compressor.threshold.value = -24; compressor.knee.value = 20; compressor.ratio.value = 3;
+        compressor.attack.value = 0.003; compressor.release.value = 0.25;
+
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+
+        dest = audioCtx.createMediaStreamDestination();
+
+        // السلسلة: مصدر → HP → LP → Compressor → Analyser → Destination
+        sourceNode.connect(hpFilter).connect(lpFilter).connect(compressor).connect(analyser).connect(dest);
+
+        // مُسجّل من stream المعالج
+        recorder = new MediaRecorder(dest.stream, { mimeType: "audio/webm" });
+
+        recorder.ondataavailable = (e)=>{ if(e.data && e.data.size>0) chunks.push(e.data); };
+        recorder.onstop = ()=>{
+          recordingBlob = new Blob(chunks, { type: "audio/webm" });
+          chunks = [];
+          preview.src = URL.createObjectURL(recordingBlob);
+          uploadBtn.classList.remove("disabled");
+          stopBtn.classList.add("disabled");
+          startBtn.classList.remove("disabled");
+          saveStatus.textContent = "تم إيقاف التسجيل. يمكنك الرفع الآن أو إعادة المحاولة.";
+        };
+
+        micStatus.textContent = "مستوى الصوت: جاهز";
+        startBtn.classList.remove("disabled");
+        startBtn.classList.add("glow");
+        startMeter();
+      }catch(err){
+        console.error(err);
+        micStatus.innerHTML = `<span class="error">خطأ في الميكروفون: ${err.message}</span>`;
+      }
+    }
+
+    // العدّ التنازلي + بدء التسجيل
+    async function startRecording(){
+      if(!recorder || !activeSpeaker || !activeText){ return; }
+      startBtn.classList.add("disabled");
+      uploadBtn.classList.add("disabled");
+      saveStatus.textContent = "";
+
+      // عد تنازلي + صفارات
+      overlay.style.display = "flex";
+      for(let n=3;n>=1;n--){
+        countNum.textContent = n;
+        beep();
+        await sleep(1000);
+      }
+      overlay.style.display = "none";
+
+      // بدء
+      recorder.start();
+      stopBtn.classList.remove("disabled");
+      startBtn.classList.remove("glow");
+      saveStatus.textContent = "جاري التسجيل… تحدث بالقرب من الميكروفون.";
+    }
+
+    function stopRecording(){
+      if(recorder && recorder.state === "recording"){
+        recorder.stop();
+      }
+    }
+
+    // رفع + إدراج صف
+    async function uploadRecording(){
+      try{
+        if(!recordingBlob) return;
+        saveStatus.textContent = "جاري الرفع…";
+        const stamp = fmtDateStamp();
+        const path = `spk-${activeSpeaker.id}/${stamp}/rec-${uuid()}.webm`;
+
+        // رفع إلى التخزين
+        const up = await db.storage.from(BUCKET).upload(path, recordingBlob, {
+          cacheControl:"3600",
+          upsert:false,
+          contentType:"audio/webm"
+        });
+        if(up.error) throw up.error;
+
+        // إدراج في جدول recordings
+        const mic = (micType.value || "").trim() || "غير محدد";
+        const ins = await db.from("recordings").insert({
+          speaker_id: activeSpeaker.id,
+          text_id: activeText.id,
+          storage_path: path,
+          status: "pending",
+          mic_type: mic
+        }).select("id").single();
+        if(ins.error) throw ins.error;
+
+        saveStatus.innerHTML = `<span class="success">✅ تم رفع التسجيل بنجاح.</span> سيتم تحميل نص جديد…`;
+        uploadBtn.classList.add("disabled");
+        recordingBlob = null;
+
+        // حدّث العدادات + اجلب نصًا جديدًا
+        await Promise.all([loadTotals(), loadSpeakerStats(), loadAttempts(activeText.id)]);
+        await loadRandomText();
+      }catch(err){
+        console.error(err);
+        saveStatus.innerHTML = `<span class="error">فشل الرفع: ${err.message}</span>`;
+      }
+    }
+
+    // === جلب البيانات من Supabase ===
+    async function loadSpeakers(){
+      speakerSelect.innerHTML = `<option value="">— اختر المتحدث —</option>`;
+      const { data, error } = await db.from("speakers").select("id,name").order("name",{ascending:true});
+      if(error){ speakerSelect.innerHTML += `<option disabled>خطأ في تحميل الأسماء</option>`; return; }
+      for(const s of data){ 
+        const op = document.createElement("option");
+        op.value = s.id; op.textContent = s.name;
+        speakerSelect.appendChild(op);
+      }
+    }
+
+    async function loadTotals(){
+      const { count } = await db.from("recordings").select("*", { count:"exact", head:true });
+      totalsBadge.textContent = count ?? 0;
+    }
+
+    async function loadRandomText(){
+      // اجلب نصًا واحدًا عشوائيًا (من لهجة الخرطوم/ممزوجة ضمن الجدول). يمكنك تعديل الشرط حسب العمود category.
+      const { data, error } = await db
+          .from("texts")
+          .select("id, content, category")
+          .limit(1)
+          .order("random"); // يستخدم امتداد random()
+      if(error || !data?.length){ 
+        currentText.innerHTML = `<span class="error">تعذر تحميل نص. تأكد من وجود بيانات في جدول النصوص.</span>`;
+        activeText = null;
+        startBtn.classList.add("disabled");
+        return;
+      }
+      activeText = data[0];
+      currentText.textContent = activeText.content;
+      startBtn.classList.remove("disabled");
+      startBtn.classList.add("glow");
+      // تقدّم افتراضي (صِفر)
+      progressBar.style.width = "0%";
+      await loadAttempts(activeText.id);
+    }
+
+    async function loadAttempts(textId){
+      const { count } = await db.from("recordings")
+        .select("*",{count:"exact", head:true})
+        .eq("text_id", textId);
+      attemptsInfo.textContent = `المحاولات لهذا النص: ${count ?? 0}`;
+      // تقدير بسيط لملء شريط التقدم (حد أعلى 5)
+      const max = 5, pct = Math.min(100, Math.round(((count ?? 0)/max)*100));
+      progressBar.style.width = pct + "%";
+    }
+
+    async function loadSpeakerStats(){
+      if(!activeSpeaker){ speakerStats.textContent = "سجّلت بصوتك: — ملف"; return; }
+      const { count } = await db.from("recordings")
+        .select("*",{count:"exact", head:true})
+        .eq("speaker_id", activeSpeaker.id);
+      speakerStats.textContent = `سجّلت بصوتك: ${count ?? 0} ملف`;
+    }
+
+    // === أحداث الواجهة ===
+    speakerSelect.addEventListener("change", async (e)=>{
+      const id = e.target.value;
+      if(!id){ activeSpeaker = null; startBtn.classList.add("disabled"); return; }
+      activeSpeaker = { id: Number(id), name: e.target.selectedOptions[0].textContent };
+      await loadSpeakerStats();
+      if(activeText) startBtn.classList.remove("disabled");
+    });
+
+    startBtn.addEventListener("click", startRecording);
+    stopBtn.addEventListener("click", stopRecording);
+    uploadBtn.addEventListener("click", uploadRecording);
+
+    // حالة الأزرار حسب التسجيل
+    (function wireButtons(){
+      // يفعّل/يعطّل تلقائيًا حسب recorder.state
+      setInterval(()=>{
+        if(!recorder) return;
+        stopBtn.classList.toggle("disabled", recorder.state!=="recording");
+      }, 300);
+    })();
+
+    // === إقلاع الصفحة ===
+    await loadSpeakers();
+    await loadTotals();
+    await loadRandomText();
+    await initMic();
+  </script>
 </body>
 </html>
