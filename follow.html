@@ -1,98 +1,79 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>متابعة التسجيلات 🎧 | صوتنا</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>متابعة التسجيلات | صوتنا</title>
+  <link rel="stylesheet" href="styles.css">
   <script src="config.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm"></script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    const supabase = createClient(window.SAWTNA.SUPABASE_URL, window.SAWTNA.SUPABASE_ANON);
+
+    document.addEventListener('DOMContentLoaded', init);
+    async function init(){
+      await buildSpeakers();
+      await load();
+      document.getElementById('speaker').onchange = load;
+      document.getElementById('export').onclick = exportCSV;
+    }
+
+    async function buildSpeakers(){
+      const { data } = await supabase.from('speakers').select('id,name').order('name');
+      const s = document.getElementById('speaker');
+      s.innerHTML = `<option value="">كل المتحدثين</option>` + (data||[]).map(x=>`<option value="${x.id}">${x.name}</option>`).join('');
+    }
+
+    async function load(){
+      const target = document.getElementById('list');
+      const speakerId = document.getElementById('speaker').value || null;
+      target.innerHTML = '<div class="meta">⏳ جارِ التحميل...</div>';
+      let q = supabase.from('recordings').select('status, speakers(name)').order('created_at', {ascending:false});
+      if(speakerId) q = q.eq('speaker_id', speakerId);
+      const { data, error } = await q;
+      if(error){ target.innerHTML = '<p class="msg-error">حدث خطأ في تحميل البيانات</p>'; return; }
+      if(!data.length){ target.innerHTML = '<p class="meta">لا توجد نتائج.</p>'; return; }
+      const groups = { approved:0, rejected:0, pending:0 };
+      data.forEach(r => groups[r.status] = (groups[r.status]||0)+1);
+      target.innerHTML = `
+        <div class="card">
+          <div class="row">
+            <div class="col">✅ مقبولة: <strong>${groups.approved||0}</strong></div>
+            <div class="col">❌ مرفوضة: <strong>${groups.rejected||0}</strong></div>
+            <div class="col">⏳ قيد المراجعة: <strong>${groups.pending||0}</strong></div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function exportCSV(){
+      const speakerId = document.getElementById('speaker').value || null;
+      let q = supabase.from('recordings').select('created_at,status,speakers(name)').order('created_at',{ascending:false});
+      if(speakerId) q = q.eq('speaker_id', speakerId);
+      const { data, error } = await q;
+      if(error || !data) return alert('تعذّر التصدير');
+      const rows = [['speaker','status','created_at'], ...data.map(r => [r.speakers?.name||'', r.status, r.created_at])];
+      const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='follow.csv'; a.click();
+    }
+  </script>
 </head>
 <body>
   <div class="container">
-    <h1>متابعة التسجيلات 🎧</h1>
-
-    <p class="muted center">اختر اسمك لمعرفة حالة تسجيلاتك أو اتركه فارغًا لعرض الجميع</p>
-
+    <h1>🎧 متابعة التسجيلات</h1>
     <div class="card">
       <div class="row">
-        <select id="speakerSelect" class="input">
-          <option value="">كل المتحدثين</option>
-        </select>
-        <button id="exportBtn" class="btn">تصدير النتائج إلى CSV ⬇️</button>
+        <div class="col">
+          <label class="meta">اختر المتحدث</label>
+          <select id="speaker" class="select"><option>جارِ التحميل...</option></select>
+        </div>
+        <div class="col" style="align-self:end">
+          <button class="btn mint" id="export">⬇️ تصدير النتائج إلى CSV</button>
+        </div>
       </div>
     </div>
-
     <div id="list"></div>
   </div>
-
-<script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
-  const sb = createClient(window.SAWTNA.SUPABASE_URL, window.SAWTNA.SUPABASE_ANON);
-
-  const select = document.getElementById('speakerSelect');
-  const list = document.getElementById('list');
-  const exportBtn = document.getElementById('exportBtn');
-
-  async function loadSpeakers() {
-    const { data } = await sb.from('speakers').select('id,name').order('name');
-    (data||[]).forEach(s=>{
-      const opt=document.createElement('option');
-      opt.value=s.id; opt.textContent=s.name;
-      select.appendChild(opt);
-    });
-  }
-
-  function render(records){
-    list.innerHTML='';
-    if(!records.length){
-      list.innerHTML='<div class="card"><p class="muted">لا توجد تسجيلات.</p></div>';
-      return;
-    }
-    records.forEach(r=>{
-      const card=document.createElement('div'); card.className='card';
-      card.innerHTML = `
-        <div class="row" style="justify-content:space-between">
-          <strong>${r.speakers?.name || 'مجهول'}</strong>
-          <span class="status ${r.status}">${r.status}</span>
-        </div>
-        <p class="muted">النص: ${r.texts?.content || '-'}</p>
-        <div class="audioBox"><audio controls src="${storageURL(r.storage_path)}"></audio></div>
-      `;
-      list.appendChild(card);
-    });
-  }
-
-  function storageURL(path){
-    return `${window.SAWTNA.SUPABASE_URL}/storage/v1/object/public/${window.SAWTNA.BUCKET}/${path}`;
-  }
-
-  async function loadRecords(){
-    const speakerId = select.value;
-    let query = sb.from('recordings').select('id,status,storage_path, speakers(name), texts(content)').order('created_at',{ascending:false});
-    if (speakerId) query = query.eq('speaker_id', speakerId);
-    const { data, error } = await query;
-    if(error){ list.innerHTML='<div class="card"><p class="muted">حدث خطأ في تحميل البيانات.</p></div>'; return; }
-    render(data||[]);
-  }
-
-  // CSV
-  exportBtn.addEventListener('click', async ()=>{
-    const speakerId = select.value;
-    let query = sb.from('recordings').select('id,status,storage_path, speakers(name), texts(content)').order('created_at',{ascending:false});
-    if (speakerId) query = query.eq('speaker_id', speakerId);
-    const { data } = await query;
-    const rows = [['name','status','text','storage_path']];
-    (data||[]).forEach(r=>rows.push([r.speakers?.name||'', r.status, (r.texts?.content||'').replace(/\n/g,' '), r.storage_path]));
-    const csv = rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
-    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sawtna-recordings.csv'; a.click();
-  });
-
-  select.addEventListener('change', loadRecords);
-
-  await loadSpeakers();
-  await loadRecords(); // يعرض “الكل” افتراضيًا
-</script>
 </body>
 </html>

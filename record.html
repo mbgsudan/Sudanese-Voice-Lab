@@ -1,199 +1,134 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>تسجيل صوت جديد 🎙️ | صوتنا</title>
-  <link rel="stylesheet" href="styles.css"/>
-  <!-- إعدادات -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل صوت جديد | صوتنا</title>
+  <link rel="stylesheet" href="styles.css">
   <script src="config.js"></script>
-  <!-- Supabase -->
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm"></script>
 </head>
 <body>
   <div class="container">
-    <h1>تسجيل صوت جديد 🎤</h1>
-
+    <h1>🎙️ تسجيل صوت جديد</h1>
     <div class="card">
-      <div class="row center">
-        <span class="stat">👌 اقرأ النص بوضوح وبطبيعتك السودانية</span>
-        <span class="stat" style="margin-inline-start:auto">
-          <span class="counter" id="progCount">0</span>/<span id="totalCount">0</span>
-        </span>
-      </div>
-
-      <div class="card2" style="padding:16px;border-radius:12px;margin-top:10px">
-        <h2 style="text-align:center;margin:6px 0">النص الحالي:</h2>
-        <p id="textContent" class="center" style="font-size:22px;min-height:64px;margin:6px 0">جارِ التحميل…</p>
-
-        <div class="row center" style="margin-top:10px">
-          <button class="btn outline" id="prevBtn">⏮️ نص سابق</button>
-          <button class="btn outline" id="skipBtn">⏭️ تخطي النص</button>
+      <p class="meta">اقرأ النص بوضوح وبطبيعتك السودانية 👌</p>
+      <p id="counter" class="meta">0/0</p>
+      <div id="textBox" class="card" style="background:#0b1113;border:1px solid #122">
+        <h2 id="currentText">جارِ التحميل...</h2>
+        <div class="row">
+          <button class="btn outline" id="prev">⏮️ نص سابق</button>
+          <button class="btn outline" id="skip">⏭️ تخطّي النص</button>
         </div>
       </div>
-
-      <div class="row center" style="margin-top:16px">
-        <button class="btn" id="recBtn">ابدأ التسجيل 🎙️</button>
+      <div class="pulse" id="pulse"></div>
+      <div class="center">
+        <button class="btn mint" id="recordBtn">ابدأ التسجيل 🎤</button>
       </div>
-
-      <div class="audioBox" id="previewBox" style="display:none">
-        <audio id="preview" controls></audio>
-        <div class="row" style="margin-top:8px">
-          <button class="btn ok" id="uploadBtn">رفع ✅</button>
-          <button class="btn bad" id="redoBtn">إعادة التسجيل ↺</button>
-        </div>
-      </div>
-
-      <p class="stat" id="hint"></p>
+      <p id="status" class="meta"></p>
     </div>
   </div>
 
 <script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm";
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  const supabase = createClient(window.SAWTNA.SUPABASE_URL, window.SAWTNA.SUPABASE_ANON);
 
-  // ====== إعدادات عامة ======
-  const sb = createClient(window.SAWTNA.SUPABASE_URL, window.SAWTNA.SUPABASE_ANON);
-  const BUCKET = window.SAWTNA.BUCKET;
+  const counterEl = document.getElementById('counter');
+  const textEl = document.getElementById('currentText');
+  const statusEl = document.getElementById('status');
+  const pulse = document.getElementById('pulse');
+  const prevBtn = document.getElementById('prev');
+  const skipBtn = document.getElementById('skip');
+  const recordBtn = document.getElementById('recordBtn');
 
-  // “هوية” المتحدث البسيطة (اسم فقط مؤقتًا — لو عندك تحديد اسم في مكان آخر استورده من localStorage)
-  const SPEAKER_NAME_KEY = "sawtna_speaker_name";
-  let speakerName = localStorage.getItem(SPEAKER_NAME_KEY) || "مساهم";
-
-  // عناصر الواجهة
-  const textEl = document.getElementById('textContent');
-  const progCountEl = document.getElementById('progCount');
-  const totalCountEl = document.getElementById('totalCount');
-  const hint = document.getElementById('hint');
-  const recBtn = document.getElementById('recBtn');
-  const prevBtn = document.getElementById('prevBtn');
-  const skipBtn = document.getElementById('skipBtn');
-  const previewBox = document.getElementById('previewBox');
-  const preview = document.getElementById('preview');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const redoBtn = document.getElementById('redoBtn');
-
-  // حالة نصوص
-  let texts = [];            // [{id, content}]
-  let usedIds = new Set(JSON.parse(localStorage.getItem('sawtna_used_texts') || '[]')); // منع تكرار النص
-  let indexStack = [];       // لزر “نص سابق”
-  let current = null;
-
-  // ميكروفون
+  let texts = [], idx = 0;
   let mediaRecorder, chunks = [];
 
-  // ====== تحميل النصوص ======
-  async function loadTexts() {
-    // نجلب فقط النصوص الفعالة (لو عندك عمود active=true). إن لم يوجد احذف الشرط.
-    const { data, error } = await sb.from('texts')
-      .select('id, content')
-      .order('id', { ascending: true });
-
-    if (error) { textEl.textContent = 'تعذر تحميل النصوص'; return; }
-    texts = data || [];
-    totalCountEl.textContent = texts.length.toString();
-    pickNext();
+  async function loadTexts(){
+    const { data, error } = await supabase.from('texts').select('content').order('id');
+    if(error || !data || !data.length){
+      texts = [
+        "السلام عليكم يا جماعة.",
+        "اليوم الجو جميل في الخرطوم.",
+        "أنا بحب الشاي بالحليب.",
+        "سجل صوتك باللهجة السودانية!"
+      ];
+      statusEl.textContent = "⚠️ لا توجد نصوص في القاعدة، تم تحميل نصوص احتياطية.";
+      statusEl.className = "meta msg-error";
+    }else{
+      texts = data.map(x=>x.content);
+    }
+    render();
   }
 
-  function pickNext(goBack = false) {
-    if (goBack && indexStack.length > 0) {
-      const prev = indexStack.pop();
-      current = prev;
-      textEl.textContent = prev.content;
-      return;
-    }
-
-    // اختر أول نص غير مستخدم
-    const next = texts.find(t => !usedIds.has(t.id));
-    if (!next) {
-      textEl.textContent = 'أحسنت! أكملت كل النصوص المتاحة 👏';
-      recBtn.disabled = true;
-      skipBtn.disabled = true;
-      prevBtn.disabled = (indexStack.length === 0);
-      return;
-    }
-    if (current) indexStack.push(current);
-    current = next;
-    textEl.textContent = next.content;
-    prevBtn.disabled = (indexStack.length === 0);
+  function render(){
+    textEl.textContent = texts[idx];
+    counterEl.textContent = `${idx+1}/${texts.length}`;
   }
 
-  // ====== التسجيل ======
-  recBtn.addEventListener('click', async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }});
+  prevBtn.onclick = ()=>{ if(idx>0){ idx--; render(); }};
+  skipBtn.onclick = ()=>{ if(idx<texts.length-1){ idx++; render(); } };
+
+  function beep(freq=600, dur=0.12){
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine'; osc.frequency.value = freq;
+    osc.connect(gain); gain.connect(ctx.destination);
+    gain.gain.value = 0.2;
+    osc.start(); osc.stop(ctx.currentTime + dur);
+  }
+
+  async function startRecord(){
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
       mediaRecorder = new MediaRecorder(stream);
       chunks = [];
       mediaRecorder.ondataavailable = e => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-        preview.src = URL.createObjectURL(blob);
-        previewBox.style.display = 'block';
-      };
-      mediaRecorder.start();
-      recBtn.textContent = 'إيقاف التسجيل ⏹️';
-      recBtn.onclick = () => { mediaRecorder.stop(); recBtn.textContent = 'ابدأ التسجيل 🎙️'; recBtn.onclick = null; };
-      hint.textContent = 'جارٍ التسجيل… تحدث بقرب الميكروفون وابتعد عن الضوضاء.';
-    } catch(e) {
-      hint.textContent = 'لا يمكن الوصول للميكروفون.';
+      mediaRecorder.onstop = onStop;
+
+      // countdown
+      let c = 3;
+      statusEl.textContent = `⏳ التسجيل بعد ${c}...`;
+      const t = setInterval(()=>{
+        c--;
+        if(c>0){ statusEl.textContent = `⏳ التسجيل بعد ${c}...`; }
+        else{
+          clearInterval(t);
+          pulse.style.display = 'block';
+          statusEl.textContent = "🎙️ جاري التسجيل...";
+          beep(900, 0.09);
+          mediaRecorder.start();
+          setTimeout(()=>{
+            mediaRecorder.stop();
+            pulse.style.display = 'none';
+            beep(500, 0.09);
+          }, 4500);
+        }
+      }, 1000);
+    }catch(e){
+      alert("يرجى السماح بالوصول للمايكروفون");
     }
-  });
+  }
 
-  redoBtn.addEventListener('click', () => {
-    previewBox.style.display = 'none';
-    preview.removeAttribute('src');
-  });
+  async function onStop(){
+    const blob = new Blob(chunks, { type:'audio/webm' });
+    const path = `voice_${Date.now()}.webm`;
+    const { error } = await supabase.storage.from(window.SAWTNA.BUCKET).upload(path, blob);
+    if(error){ statusEl.textContent = "❌ فشل رفع التسجيل"; statusEl.className = "meta msg-error"; return; }
 
-  // ====== الرفع ======
-  uploadBtn.addEventListener('click', async () => {
-    if (!current || !preview.src) return;
-    uploadBtn.disabled = true;
+    // اختياري: إدراج سطر في جدول recordings (إن كان متاحًا بدون speaker/text)
+    try{
+      await supabase.from('recordings').insert({ storage_path: path, status:'pending' });
+    }catch(e){ /* ignore if constraints */ }
 
-    // ابحث (أو أنشئ) المتحدث بالاسم
-    let speakerId = null;
-    {
-      const { data: sp } = await sb.from('speakers').select('id').eq('name', speakerName).maybeSingle();
-      if (sp?.id) speakerId = sp.id;
-      else {
-        const { data: ins } = await sb.from('speakers').insert([{ name: speakerName }]).select('id').single();
-        speakerId = ins.id;
-      }
-    }
+    statusEl.textContent = "✅ تم حفظ التسجيل!";
+    statusEl.className = "meta";
 
-    // جهّز الملف
-    const res = await fetch(preview.src); const blob = await res.blob();
-    const objectPath = `${speakerName}-${current.id}-${Date.now()}.webm`;
+    if(idx < texts.length-1){ idx++; render(); }
+    else{ recordBtn.disabled = True; textEl.textContent = "🎉 انتهيت من كل النصوص!"; }
+  }
 
-    // ارفع إلى التخزين
-    const up = await sb.storage.from(BUCKET).upload(objectPath, blob, { contentType: 'audio/webm', upsert:false });
-    if (up.error) { hint.textContent = 'تعذر الرفع'; uploadBtn.disabled=false; return; }
-
-    // سجّل في recordings (pending افتراضيًا)
-    const insRec = await sb.from('recordings').insert([{
-      speaker_id: speakerId,
-      text_id: current.id,
-      storage_path: objectPath,
-      status: 'pending'
-    }]);
-
-    if (insRec.error) { hint.textContent = 'خطل أثناء الحفظ.'; uploadBtn.disabled=false; return; }
-
-    // حدّث التقدم واذهب للنص التالي
-    usedIds.add(current.id);
-    localStorage.setItem('sawtna_used_texts', JSON.stringify([...usedIds]));
-    progCountEl.textContent = usedIds.size.toString();
-    hint.textContent = 'تم الرفع بنجاح ✅';
-    previewBox.style.display = 'none';
-    preview.removeAttribute('src');
-    pickNext();
-    uploadBtn.disabled = false;
-  });
-
-  // تخطي/سابق
-  skipBtn.addEventListener('click', () => pickNext(false));
-  prevBtn.addEventListener('click', () => pickNext(true));
-
-  // ابدأ
-  progCountEl.textContent = usedIds.size.toString();
+  recordBtn.onclick = startRecord;
   loadTexts();
 </script>
 </body>
