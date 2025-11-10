@@ -1,109 +1,51 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>📈 لوحة المتابعة – صوتنا</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 متابعة التقدم - صوتنا</title>
+<style>
+body{font-family:Cairo,Arial,sans-serif;background:#0b0b0b;color:#fff;text-align:center;margin:0;padding:0}
+.container{max-width:800px;margin:40px auto;background:#111;padding:25px;border-radius:20px;box-shadow:0 0 30px rgba(0,0,0,.4)}
+h1{color:#00e0b6;margin-bottom:15px}
+.bar{height:14px;background:#333;border-radius:8px;margin:8px 0;overflow:hidden}
+.fill{height:100%;border-radius:8px;transition:width .3s;background:linear-gradient(90deg,#00bfa6,#00e0b6)}
+.speaker-card{background:#1a1a1a;margin:12px 0;padding:15px;border-radius:12px;text-align:right}
+.speaker-name{font-weight:bold;color:#00e0b6}
+</style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <img src="logo-full.png" class="logo" alt="صوتنا">
-      <h2>📈 لوحة متابعة المشروع</h2>
-    </header>
+<div class="container">
+<h1>📊 لوحة متابعة المتحدثين</h1>
+<div id="speakersList">جارٍ تحميل البيانات...</div>
+</div>
 
-    <div id="login">
-      <p>أدخل كلمة مرور المشرف:</p>
-      <input id="pw" type="password" placeholder="70003mbgz">
-      <button id="loginBtn" class="btn">دخول</button>
-      <p id="msg"></p>
-    </div>
-
-    <div id="dashboard" style="display:none">
-      <section class="stats">
-        <h3>إحصائيات عامة</h3>
-        <ul id="statsList">
-          <li>إجمالي التسجيلات: <span id="totalRec">0</span></li>
-          <li>تمت الموافقة: <span id="approvedRec">0</span></li>
-          <li>قيد المراجعة: <span id="pendingRec">0</span></li>
-          <li>مرفوضة: <span id="rejectedRec">0</span></li>
-          <li>عدد المتحدثين: <span id="speakersCount">0</span></li>
-          <li>عدد النصوص الكلي: <span id="textsCount">0</span></li>
-        </ul>
-      </section>
-
-      <section>
-        <h3>🎙️ أكثر المتحدثين نشاطًا</h3>
-        <table id="speakerStats" border="1" cellpadding="8" style="width:100%">
-          <thead><tr><th>المتحدث</th><th>عدد التسجيلات</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </section>
-
-      <section>
-        <h3>🗒️ أكثر النصوص استخدامًا</h3>
-        <table id="textStats" border="1" cellpadding="8" style="width:100%">
-          <thead><tr><th>النص</th><th>عدد التسجيلات</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </section>
-    </div>
-  </div>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm';
-    const supabase = createClient(
-      "https://qcctqvmwwpsoiexgdqwp.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ"
-    );
-
-    const login = document.getElementById("login");
-    const dashboard = document.getElementById("dashboard");
-    const msg = document.getElementById("msg");
-
-    document.getElementById("loginBtn").onclick = async () => {
-      const pw = document.getElementById("pw").value;
-      if (pw === "70003mbgz") {
-        login.style.display = "none";
-        dashboard.style.display = "block";
-        loadData();
-      } else msg.textContent = "كلمة المرور غير صحيحة.";
-    };
-
-    async function loadData() {
-      // إجمالي التسجيلات
-      const { data: recs } = await supabase.from("recordings").select("qa_status");
-      const total = recs?.length || 0;
-      const approved = recs?.filter(r=>r.qa_status==='approved').length || 0;
-      const pending = recs?.filter(r=>r.qa_status==='pending').length || 0;
-      const rejected = recs?.filter(r=>r.qa_status==='rejected').length || 0;
-
-      document.getElementById("totalRec").textContent = total;
-      document.getElementById("approvedRec").textContent = approved;
-      document.getElementById("pendingRec").textContent = pending;
-      document.getElementById("rejectedRec").textContent = rejected;
-
-      // عدد المتحدثين والنصوص
-      const { count: spkCount } = await supabase.from("speakers").select("*", { count: "exact", head: true });
-      const { count: txtCount } = await supabase.from("texts").select("*", { count: "exact", head: true });
-      document.getElementById("speakersCount").textContent = spkCount || 0;
-      document.getElementById("textsCount").textContent = txtCount || 0;
-
-      // أكثر المتحدثين نشاطًا
-      const { data: speakerStats } = await supabase.rpc('get_speaker_stats');
-      const tbody1 = document.querySelector("#speakerStats tbody");
-      tbody1.innerHTML = speakerStats?.length
-        ? speakerStats.map(s=>`<tr><td>${s.name}</td><td>${s.count}</td></tr>`).join('')
-        : '<tr><td colspan="2">لا توجد بيانات</td></tr>';
-
-      // أكثر النصوص استخدامًا
-      const { data: textStats } = await supabase.rpc('get_text_stats');
-      const tbody2 = document.querySelector("#textStats tbody");
-      tbody2.innerHTML = textStats?.length
-        ? textStats.map(t=>`<tr><td>${t.content}</td><td>${t.count}</td></tr>`).join('')
-        : '<tr><td colspan="2">لا توجد بيانات</td></tr>';
-    }
-  </script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/+esm';
+const supabase = createClient(
+  "https://qcctqvmwwpsoiexgdqwp.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ"
+);
+async function loadProgress(){
+  const list=document.getElementById("speakersList");
+  const {data:sp}=await supabase.from("speakers").select("id,name");
+  if(!sp||!sp.length){list.textContent="لا يوجد متحدثون بعد.";return;}
+  list.innerHTML="";
+  for(const s of sp){
+    const {count}=await supabase.from("recordings").select("*",{count:"exact",head:true}).eq("speaker_id",s.id);
+    const {count:accepted}=await supabase.from("recordings").select("*",{count:"exact",head:true}).eq("speaker_id",s.id).eq("status","approved");
+    const pct=count?Math.round((accepted||0)/count*100):0;
+    const div=document.createElement("div");
+    div.className="speaker-card";
+    div.innerHTML=`<div class='speaker-name'>🎙️ ${s.name}</div>
+    <div>إجمالي التسجيلات: ${count||0}</div>
+    <div>المقبولة: ${accepted||0}</div>
+    <div class='bar'><div class='fill' style='width:${pct}%;'></div></div>
+    <div>${pct}% إنجاز</div>`;
+    list.appendChild(div);
+  }
+}
+loadProgress();
+</script>
 </body>
 </html>
