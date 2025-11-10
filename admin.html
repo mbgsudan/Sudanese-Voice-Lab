@@ -1,49 +1,0 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>دخول المشرف — صوتنا</title>
-  <link rel="stylesheet" href="./styles.css">
-  <script src="./assets/js/config.js"></script>
-</head>
-<body class="page page-muted">
-  <header class="topbar">
-    <div class="brand">
-      <img src="./logo-full.png" alt="Sawtna" class="logo-sm">
-      <h1>دخول المشرف 🔐</h1>
-    </div>
-    <nav><a class="btn ghost" href="./index.html">الرئيسية</a></nav>
-  </header>
-
-  <main class="container narrow">
-    <div class="card">
-      <label class="label">كلمة السر</label>
-      <input id="adminPass" type="password" class="input" placeholder="أدخل كلمة السر">
-      <div class="row gap" style="margin-top:10px">
-        <button id="btnLogin" class="btn">دخول</button>
-        <a href="./review.html" class="btn ghost">لوحة المراجعة</a>
-      </div>
-      <p id="adminMsg" class="hint"></p>
-    </div>
-  </main>
-
-  <footer>© 2025 — تم الإنشاء بواسطة <b>محمد بابكر</b> — Sawtna Voice Lab</footer>
-
-  <script>
-    const passIn = document.getElementById('adminPass');
-    const btn = document.getElementById('btnLogin');
-    const msg = document.getElementById('adminMsg');
-    btn.onclick = () => {
-      const ok = passIn.value.trim() === (window.SAWTNA && window.SAWTNA.ADMIN_PASSWORD);
-      if (ok) {
-        localStorage.setItem('sawtna:isAdmin','1');
-        msg.textContent = 'تم الدخول بنجاح. سيتم تحويلك…';
-        setTimeout(()=> location.href = 'review.html', 400);
-      } else {
-        msg.textContent = 'كلمة السر غير صحيحة.';
-      }
-    };
-  </script>
-</body>
-</html>
