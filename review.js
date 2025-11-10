@@ -2,9 +2,10 @@
 const SUPABASE_URL = "https://qcctqvmwwpsoiexgdqwp.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjY3Rxdm13d3Bzb2lleGdkcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MjI1OTcsImV4cCI6MjA3ODI5ODU5N30.uTfskCuzkZNcvy1QdaOzqlW8km-wcZQoVRFi6k2xndQ";
+
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// تحميل التسجيلات في لوحة المراجعة
+// تحميل التسجيلات
 async function loadRecordings() {
   try {
     const { data, error } = await supabaseClient
@@ -22,11 +23,11 @@ async function loadRecordings() {
       row.innerHTML = `
         <td>${rec.speakers?.name || "—"}</td>
         <td>${rec.texts?.content || "—"}</td>
-        <td><audio controls src="${rec.audio_url}"></audio></td>
+        <td><audio controls src="https://qcctqvmwwpsoiexgdqwp.supabase.co/storage/v1/object/public/recordings/${rec.storage_path}"></audio></td>
         <td>${rec.status || "pending"}</td>
         <td>
-          <button class="approve">✅</button>
-          <button class="reject">❌</button>
+          <button class="approve" onclick="updateStatus(${rec.id}, 'approved')">✅</button>
+          <button class="reject" onclick="updateStatus(${rec.id}, 'rejected')">❌</button>
         </td>
       `;
       tableBody.appendChild(row);
@@ -37,14 +38,27 @@ async function loadRecordings() {
   }
 }
 
-// تفعيل زر إضافة متحدث جديد
+// تحديث الحالة
+async function updateStatus(id, status) {
+  try {
+    const { error } = await supabaseClient
+      .from("recordings")
+      .update({ status })
+      .eq("id", id);
+
+    if (error) throw error;
+    loadRecordings();
+  } catch (err) {
+    console.error("Error updating status:", err.message);
+  }
+}
+
+// نموذج إضافة متحدث جديد
 document
   .getElementById("addSpeakerBtn")
   ?.addEventListener("click", showSpeakerForm);
 
-// نافذة إضافة متحدث جديد
 function showSpeakerForm() {
-  // منع تكرار النافذة
   if (document.getElementById("formContainer")) return;
 
   const formHTML = `
@@ -110,18 +124,11 @@ function showSpeakerForm() {
         return;
       }
 
-      // توليد كود تلقائي
       const code = `SPK-${Math.floor(100 + Math.random() * 900)}`;
 
       try {
         const { error } = await supabaseClient.from("speakers").insert([
-          {
-            code,
-            name,
-            gender,
-            age_range: age,
-            accent,
-          },
+          { code, name, gender, age_range: age, accent },
         ]);
 
         if (error) throw error;
@@ -140,5 +147,5 @@ function showSpeakerForm() {
     );
 }
 
-// تحميل عند فتح الصفحة
+// تحميل البيانات عند فتح الصفحة
 document.addEventListener("DOMContentLoaded", loadRecordings);
