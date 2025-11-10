@@ -1,51 +1,66 @@
-
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>صوتنا – دخول المشرف</title>
-  <link rel="stylesheet" href="styles.css"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>دخول المشرف — صوتنا</title>
+<link href="styles.css" rel="stylesheet">
+<style>
+  /* تصميم بسيط عربي */
+  body{font-family: 'Cairo', sans-serif; background:#070707; color:#e6eef8; margin:0; padding:40px; direction:rtl;}
+  .wrap{max-width:720px;margin:40px auto;padding:40px;border-radius:16px;background:linear-gradient(180deg,#0b0b0b 0%, #0f1113 100%);box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+  h1{font-size:34px;text-align:center;margin:0 0 26px;color:#19d3a8}
+  .input{display:block;width:100%;padding:18px;border-radius:18px;border:none;background:#f3f5f7;color:#111;font-size:18px;box-shadow:inset 0 2px 6px rgba(0,0,0,0.3)}
+  .btn{display:block;margin:20px auto 0;padding:12px 28px;border-radius:14px;border:none;background:#ddd;color:#444;font-weight:700;font-size:18px;cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  .msg{margin-top:18px;text-align:center;color:#c6d8ff;opacity:0.95}
+  .error{color:#ffb3b3}
+  .note{font-size:14px;color:#8f9ebf;margin-top:10px;text-align:center}
+</style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <img src="logo-full.png" class="logo" alt="صوتنا"/>
-      <h2>🔐 بوابة المشرف</h2>
-      <p class="sub">أدخل كلمة المرور للوصول إلى أدوات المراجعة والمتابعة.</p>
-    </header>
-    <div class="panel">
-      <div class="field">
-        <label>كلمة المرور</label>
-        <input id="adminPass" type="password" placeholder="•••••••••" />
-      </div>
-      <div class="actions">
-        <button id="enter" class="btn">دخول</button>
-      </div>
-      <p id="msg" class="notice"></p>
-      <div id="adminLinks" class="nav" style="display:none;margin-top:12px">
-        <a href="review.html"><button class="btn-ok">✅ صفحة المراجعة</button></a>
-        <a href="progress.html"><button class="btn">📈 صفحة المتابعة</button></a>
-      </div>
-    </div>
-    <p class="small center">في حال نسيت كلمة المرور تواصل مع مسؤول المنصة.</p>
-    <div class="footer">منصة صوتنا 2025</div>
+  <div class="wrap" role="main">
+    <h1>دخول المشرف 🔐</h1>
+
+    <label for="pwd" style="display:block;text-align:center;margin-bottom:8px;color:#dbe9ff">أدخل كلمة السر</label>
+    <input id="pwd" class="input" type="password" placeholder="أدخل كلمة السر" autocomplete="off" />
+
+    <button id="loginBtn" class="btn">دخول</button>
+
+    <p id="feedback" class="msg"></p>
+    <p class="note">إذا نجحت الدخول، سيتم توجيهك إلى لوحة المراجعة.</p>
   </div>
-  <script type="module">
-    const PASS = "70003mbgz";
-    const passIn = document.getElementById('adminPass');
-    const enter = document.getElementById('enter');
-    const msg = document.getElementById('msg');
-    const links = document.getElementById('adminLinks');
-    enter.onclick = () => {
-      if(passIn.value.trim() === PASS){
-        msg.textContent = "تم التحقق ✅";
-        links.style.display = "flex";
-        sessionStorage.setItem('sawtna_admin_ok', '1');
-      }else{
-        msg.textContent = "كلمة المرور غير صحيحة.";
-      }
-    };
-  </script>
+
+<script>
+(function(){
+  // --- ملاحظة مهمة:
+  // هذا مثال تحقق على جهة العميل (غير آمن تماماً). لاحقاً انقل التحقق للخادم أو استخدم Supabase Auth.
+  const ADMIN_PASSWORD = "70003mbgz"; // مؤقت - لا تتركها ظاهرة في production
+
+  const input = document.getElementById('pwd');
+  const btn = document.getElementById('loginBtn');
+  const msg = document.getElementById('feedback');
+
+  function showError(text){ msg.textContent = text; msg.classList.add('error'); }
+  function showOk(text){ msg.textContent = text; msg.classList.remove('error'); }
+
+  btn.addEventListener('click', function(){
+    const val = (input.value || '').trim();
+    if(!val){ showError("أدخل كلمة السر أولاً."); return; }
+
+    if(val === ADMIN_PASSWORD){
+      showOk("تم التحقق — جارٍ التحويل...");
+      // يمكنك تغيير الرابط لصفحة المراجعة الحقيقية
+      setTimeout(()=> window.location.href = '/review.html', 700);
+    } else {
+      showError("كلمة السر خاطئة.");
+      input.value = '';
+      input.focus();
+    }
+  });
+
+  // منع أي عرض لكلمة السر في DOM (تأكد أنك أزلت أي عنصر يطبعها)
+})();
+</script>
 </body>
 </html>
