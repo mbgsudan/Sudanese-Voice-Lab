@@ -1,7 +1,3 @@
-if (!localStorage.getItem("admin_auth")) {
-  alert("يجب تسجيل الدخول أولاً 🔐");
-  window.location.href = "admin.html"; // أو login.html لو غيرت الاسم
-}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -116,6 +112,7 @@ h1 {
   margin-top: 10px;
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 .approve {
   background: #00c46b;
@@ -139,11 +136,20 @@ audio {
 </style>
 </head>
 <body>
+
+<script>
+  // 🔐 حماية الصفحة
+  if (!localStorage.getItem("admin_auth")) {
+    alert("🔐 يجب تسجيل الدخول أولاً للوصول إلى لوحة المراجعة.");
+    window.location.href = "admin.html";
+  }
+</script>
+
   <div class="container">
     <h1>🛠️ لوحة مراجعة التسجيلات</h1>
     <div class="topbar">
       <button class="btn add" onclick="toggleAddSpeaker()">➕ إضافة متحدث جديد</button>
-      <button class="btn logout" onclick="logout()">🚪 خروج</button>
+      <button class="btn logout" onclick="logoutAdmin()">🚪 خروج</button>
     </div>
 
     <div id="addSpeakerBox">
@@ -222,20 +228,29 @@ async function loadRecords() {
         <audio controls src="https://qcctqvmwwpsoiexgdqwp.supabase.co/storage/v1/object/public/${BUCKET}/${r.storage_path}"></audio>
       </div>
       <div class="btns">
-        <button class="btn approve" onclick="updateStatus(${r.id}, 'approved')">✅ موافقة</button>
-        <button class="btn reject" onclick="updateStatus(${r.id}, 'rejected')">❌ رفض</button>
+        <button class="btn approve" data-id="${r.id}" data-status="approved">✅ موافقة</button>
+        <button class="btn reject" data-id="${r.id}" data-status="rejected">❌ رفض</button>
       </div>
     `;
     container.appendChild(card);
   }
+
+  // تفعيل الأزرار بعد التحميل
+  document.querySelectorAll(".approve, .reject").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      const id = e.target.dataset.id;
+      const status = e.target.dataset.status;
+      await updateStatus(id, status);
+    });
+  });
 }
 
 // تحديث الحالة
-window.updateStatus = async function (id, status) {
+async function updateStatus(id, status) {
   const { error } = await supabase.from("recordings").update({ status }).eq("id", id);
   if (error) alert("❌ فشل تحديث الحالة");
   else loadRecords();
-};
+}
 
 // إضافة متحدث
 window.addSpeaker = async function () {
@@ -264,8 +279,10 @@ window.toggleAddSpeaker = function () {
   box.style.display = box.style.display === "none" ? "block" : "none";
 };
 
-window.logout = function () {
-  location.href = "/";
+// زر الخروج
+window.logoutAdmin = function () {
+  localStorage.removeItem("admin_auth");
+  window.location.href = "index.html";
 };
 
 loadRecords();
