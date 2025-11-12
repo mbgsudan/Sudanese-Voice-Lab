@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="generator" content="Hostinger Horizons" />
+  <title>تسجيل دخول المشرف - منصة صوتنا</title>
+  <meta name="description" content="صفحة تسجيل دخول المشرف لمراجعة التسجيلات" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="container navbar-content">
+      <a href="/index.html" class="logo-container">
+        <img src="https://horizons-cdn.hostinger.com/9da7c9d8-85bf-4849-ab07-0f20888889e7/7311108cbd285b44497dcd51844265b5.png" alt="شعار صوتنا" class="navbar-logo" />
+      </a>
+      <a href="/index.html" class="back-button-nav">العودة للرئيسية</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <header class="page-header">
+      <h1>🔐 تسجيل دخول المشرف</h1>
+    </header>
+
+    <main class="admin-login-page">
+      <div class="glass-card login-card">
+        <div class="login-icon">🛠️</div>
+        <h2>لوحة المراجعة</h2>
+        <p class="login-subtitle">أدخل كلمة المرور للوصول إلى لوحة المراجعة</p>
+
+        <form id="login-form" class="login-form">
+          <div class="form-group">
+            <label for="password">كلمة المرور:</label>
+            <input 
+              type="password" 
+              id="password" 
+              class="input-field" 
+              placeholder="أدخل كلمة المرور"
+              required
+            />
+          </div>
+
+          <button type="submit" class="neon-button green large">
+            <span class="icon">🔓</span>
+            <span class="text">دخول</span>
+          </button>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container"></div>
+  <script type="module" src="/src/admin.js"></script>
+</body>
+</html>

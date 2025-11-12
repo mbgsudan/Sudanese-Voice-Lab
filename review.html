@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="generator" content="Hostinger Horizons" />
+  <title>لوحة المراجعة - منصة صوتنا</title>
+  <meta name="description" content="مراجعة وإدارة التسجيلات الصوتية" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="container navbar-content">
+      <a href="/index.html" class="logo-container">
+        <img src="https://horizons-cdn.hostinger.com/9da7c9d8-85bf-4849-ab07-0f20888889e7/7311108cbd285b44497dcd51844265b5.png" alt="شعار صوتنا" class="navbar-logo" />
+      </a>
+      <button id="logout-btn" class="neon-button red small">تسجيل خروج</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <header class="page-header review-header">
+      <h1>🛠️ لوحة المراجعة</h1>
+      <button id="add-speaker-btn" class="neon-button blue">
+          <span class="icon">➕</span>
+          <span class="text">إضافة متحدث</span>
+      </button>
+    </header>
+
+    <main class="review-page">
+      <div class="filter-tabs">
+        <button class="tab-btn active" data-status="all">الكل</button>
+        <button class="tab-btn" data-status="pending">قيد المراجعة ⏳</button>
+        <button class="tab-btn" data-status="approved">مقبول ✅</button>
+        <button class="tab-btn" data-status="rejected">مرفوض ❌</button>
+      </div>
+
+      <div class="recordings-grid" id="recordings-grid">
+        <p class="loading-text">جاري تحميل التسجيلات...</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Speaker Modal -->
+  <div id="add-speaker-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-content glass-card">
+          <button id="close-modal-btn" class="modal-close-btn">&times;</button>
+          <h2>إضافة متحدث جديد</h2>
+          <form id="add-speaker-form">
+              <div class="form-group">
+                  <label for="speaker-name">الاسم الكامل:</label>
+                  <input type="text" id="speaker-name" class="input-field" required>
+              </div>
+              <div class="form-group">
+                  <label for="speaker-gender">الجنس:</label>
+                  <select id="speaker-gender" class="input-field" required>
+                      <option value="">اختر الجنس...</option>
+                      <option value="ذكر">ذكر</option>
+                      <option value="أنثى">أنثى</option>
+                  </select>
+              </div>
+              <div class="form-group">
+                  <label for="speaker-age">العمر:</label>
+                  <input type="number" id="speaker-age" class="input-field" required>
+              </div>
+              <div class="form-group">
+                  <label for="speaker-accent-modal">اللهجة:</label>
+                  <select id="speaker-accent-modal" class="input-field" required>
+                       <option value="">جاري التحميل...</option>
+                  </select>
+              </div>
+              <div class="modal-actions">
+                  <button type="submit" id="save-speaker-btn" class="neon-button green">حفظ</button>
+                  <button type="button" id="cancel-modal-btn" class="neon-button yellow">إلغاء</button>
+              </div>
+          </form>
+      </div>
+  </div>
+
+
+  <div id="toast-container"></div>
+  <script type="module" src="/src/review.js"></script>
+</body>
+</html>
