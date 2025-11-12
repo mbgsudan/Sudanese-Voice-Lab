@@ -1,305 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صفحة المراجعة - منصة صوتنا</title>
-    <meta name="description" content="لوحة إدارة منصة صوتنا لمراجعة التسجيلات وإدارة المتحدثين">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="admin.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&family=Tajawal:wght@200;300;400;500;700;900&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="app-container">
-        <!-- شريط التنقل العلوي -->
-        <header class="navbar">
-            <div class="nav-container">
-                <div class="nav-brand">
-                    <img src="logo.png" alt="شعار منصة صوتنا" class="logo" onerror="this.style.display='none'">
-                    <span class="brand-text">منصة صوتنا</span>
-                </div>
-                <nav class="nav-menu">
-                    <a href="index.html" class="nav-link">الرئيسية</a>
-                    <a href="record.html" class="nav-link">التسجيل</a>
-                    <a href="follow-up.html" class="nav-link">المتابعة</a>
-                    <a href="admin.html" class="nav-link active">المراجعة</a>
-                </nav>
-                <button class="mobile-menu-btn" id="mobileMenuBtn">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </header>
-
-        <!-- القائمة المحمولة -->
-        <div class="mobile-menu" id="mobileMenu">
-            <div class="mobile-menu-content">
-                <a href="index.html" class="mobile-nav-link">الرئيسية</a>
-                <a href="record.html" class="mobile-nav-link">التسجيل</a>
-                <a href="follow-up.html" class="mobile-nav-link">المتابعة</a>
-                <a href="admin.html" class="mobile-nav-link active">المراجعة</a>
-            </div>
-        </div>
-
-        <!-- نافذة تسجيل الدخول -->
-        <div class="modal" id="loginModal">
-            <div class="modal-content">
-                <div class="login-header">
-                    <h2>🔐 تسجيل دخول الإدارة</h2>
-                    <p>أدخل كلمة المرور للوصول إلى لوحة الإدارة</p>
-                </div>
-                
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="adminPassword" class="form-label">كلمة المرور</label>
-                        <input type="password" id="adminPassword" class="form-input" 
-                               placeholder="أدخل كلمة المرور" required>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary btn-full">
-                        🚪 دخول
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- المحتوى الرئيسي -->
-        <main class="main-content" id="adminContent" style="display: none;">
-            <div class="admin-container">
-                <!-- رأس الصفحة -->
-                <div class="admin-header">
-                    <div class="header-content">
-                        <h1 class="page-title">⚙️ لوحة إدارة منصة صوتنا</h1>
-                        <p class="page-description">مراجعة التسجيلات وإدارة المتحدثين</p>
-                    </div>
-                    <button id="logoutBtn" class="btn btn-secondary">
-                        🚪 خروج
-                    </button>
-                </div>
-
-                <!-- التبويبات -->
-                <div class="admin-tabs">
-                    <button class="tab-btn active" data-tab="recordings">
-                        📼 التسجيلات
-                    </button>
-                    <button class="tab-btn" data-tab="speakers">
-                        👥 المتحدثون
-                    </button>
-                    <button class="tab-btn" data-tab="analytics">
-                        📊 الإحصائيات
-                    </button>
-                </div>
-
-                <!-- تبويب التسجيلات -->
-                <div id="recordingsTab" class="tab-content active">
-                    <div class="section-header">
-                        <h2 class="section-title">مراجعة التسجيلات</h2>
-                        <div class="section-actions">
-                            <select id="adminStatusFilter" class="filter-select">
-                                <option value="">جميع الحالات</option>
-                                <option value="pending">قيد المراجعة ⏳</option>
-                                <option value="approved">تم القبول ✅</option>
-                                <option value="rejected">تم الرفض ❌</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div id="adminRecordingsContainer" class="admin-recordings">
-                        <div class="loading-message">
-                            <div class="loading"></div>
-                            <p>جاري تحميل التسجيلات...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- تبويب المتحدثين -->
-                <div id="speakersTab" class="tab-content">
-                    <div class="section-header">
-                        <h2 class="section-title">إدارة المتحدثين</h2>
-                        <button id="addSpeakerFromAdmin" class="btn btn-primary">
-                            ➕ إضافة متحدث جديد
-                        </button>
-                    </div>
-                    
-                    <div id="adminSpeakersContainer" class="admin-speakers">
-                        <div class="loading-message">
-                            <div class="loading"></div>
-                            <p>جاري تحميل المتحدثين...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- تبويب الإحصائيات -->
-                <div id="analyticsTab" class="tab-content">
-                    <div class="section-header">
-                        <h2 class="section-title">الإحصائيات والتقارير</h2>
-                    </div>
-                    
-                    <!-- إحصائيات عامة -->
-                    <div class="analytics-overview">
-                        <div class="analytics-cards">
-                            <div class="analytics-card">
-                                <div class="card-icon">🎤</div>
-                                <div class="card-content">
-                                    <div class="card-number" id="totalAdminRecordings">0</div>
-                                    <div class="card-label">إجمالي التسجيلات</div>
-                                </div>
-                            </div>
-                            
-                            <div class="analytics-card">
-                                <div class="card-icon">👥</div>
-                                <div class="card-content">
-                                    <div class="card-number" id="totalAdminSpeakers">0</div>
-                                    <div class="card-label">إجمالي المتحدثين</div>
-                                </div>
-                            </div>
-                            
-                            <div class="analytics-card">
-                                <div class="card-icon">⏱️</div>
-                                <div class="card-content">
-                                    <div class="card-number" id="totalAdminDuration">0</div>
-                                    <div class="card-label">إجمالي المدة (دقائق)</div>
-                                </div>
-                            </div>
-                            
-                            <div class="analytics-card">
-                                <div class="card-icon">✅</div>
-                                <div class="card-content">
-                                    <div class="card-number" id="approvalRate">0%</div>
-                                    <div class="card-label">معدل القبول</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- الرسوم البيانية -->
-                    <div class="charts-section">
-                        <div class="chart-container">
-                            <h3>التوزيع حسب الجنس</h3>
-                            <div id="genderChart" class="chart"></div>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <h3>التوزيع حسب اللهجة</h3>
-                            <div id="dialectChart" class="chart"></div>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <h3>التوزيع حسب الحالة</h3>
-                            <div id="statusChart" class="chart"></div>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <h3>التوزيع حسب العمر</h3>
-                            <div id="ageChart" class="chart"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- نافذة إضافة متحدث -->
-        <div class="modal" id="addSpeakerAdminModal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>➕ إضافة متحدث جديد</h2>
-                    <button type="button" class="close-btn" id="closeAdminSpeakerModal">&times;</button>
-                </div>
-                
-                <form id="addAdminSpeakerForm">
-                    <div class="form-group">
-                        <label for="adminSpeakerName" class="form-label">الاسم الكامل</label>
-                        <input type="text" id="adminSpeakerName" class="form-input" required 
-                               placeholder="أدخل اسم المتحدث">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="adminSpeakerGender" class="form-label">الجنس</label>
-                        <select id="adminSpeakerGender" class="form-input" required>
-                            <option value="">اختر الجنس</option>
-                            <option value="male">ذكر</option>
-                            <option value="female">أنثى</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="adminSpeakerAge" class="form-label">العمر</label>
-                        <select id="adminSpeakerAge" class="form-input" required>
-                            <option value="">اختر الفئة العمرية</option>
-                            <option value="18-25">18-25 سنة</option>
-                            <option value="26-35">26-35 سنة</option>
-                            <option value="36-45">36-45 سنة</option>
-                            <option value="46-55">46-55 سنة</option>
-                            <option value="56+">أكثر من 56 سنة</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="adminSpeakerDialect" class="form-label">اللهجة</label>
-                        <select id="adminSpeakerDialect" class="form-input" required>
-                            <option value="">اختر اللهجة</option>
-                            <option value="khartoum">خرطوم</option>
-                            <option value="gezira">الجزيرة</option>
-                            <option value="kassala">كسلا</option>
-                            <option value="darfur">دارفور</option>
-                            <option value="kordofan">كردفان</option>
-                            <option value="white_nile">النيل الأبيض</option>
-                            <option value="blue_nile">النيل الأزرق</option>
-                            <option value="northern">الشمالية</option>
-                            <option value="red_sea">البحر الأحمر</option>
-                            <option value="other">أخرى</option>
-                        </select>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary" id="cancelAdminSpeakerBtn">إلغاء</button>
-                        <button type="submit" class="btn btn-primary">حفظ المتحدث</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- نافذة تشغيل الصوت للإدارة -->
-        <div class="modal" id="adminAudioModal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>🎧 مراجعة التسجيل</h2>
-                    <button type="button" class="close-btn" id="closeAdminAudioModal">&times;</button>
-                </div>
-                
-                <div class="admin-audio-player">
-                    <audio id="adminAudioPlayer" controls></audio>
-                    <div class="audio-details" id="adminAudioDetails">
-                        <!-- معلومات التسجيل -->
-                    </div>
-                    <div class="audio-actions">
-                        <button id="approveFromModal" class="btn btn-approve">✅ قبول</button>
-                        <button id="rejectFromModal" class="btn btn-reject">❌ رفض</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- تذييل الصفحة -->
-        <footer class="footer">
-            <div class="container">
-                <div class="footer-bottom">
-                    <p>تم الإنشاء بواسطة محمد بابكر © 2024</p>
-                </div>
-            </div>
-        </footer>
-    </div>
-
-    <!-- الإشعارات -->
-    <div class="notification-container" id="notificationContainer"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
-    <script src="admin.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
-<script src="config.js"></script>
-<script src="script.js"></script>
-<script src="record.js"></script>
-</body>
-</html>
