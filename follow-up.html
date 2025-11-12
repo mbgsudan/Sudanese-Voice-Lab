@@ -1,172 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صفحة المتابعة - منصة صوتنا</title>
-    <meta name="description" content="تابع حالة تسجيلاتك الصوتية ومعرفة ما إذا تم قبولها أو رفضها">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="follow-up.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&family=Tajawal:wght@200;300;400;500;700;900&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="app-container">
-        <!-- شريط التنقل العلوي -->
-        <header class="navbar">
-            <div class="nav-container">
-                <div class="nav-brand">
-                    <img src="logo.png" alt="شعار منصة صوتنا" class="logo" onerror="this.style.display='none'">
-                    <span class="brand-text">منصة صوتنا</span>
-                </div>
-                <nav class="nav-menu">
-                    <a href="index.html" class="nav-link">الرئيسية</a>
-                    <a href="record.html" class="nav-link">التسجيل</a>
-                    <a href="follow-up.html" class="nav-link active">المتابعة</a>
-                    <a href="admin.html" class="nav-link">المراجعة</a>
-                </nav>
-                <button class="mobile-menu-btn" id="mobileMenuBtn">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </header>
-
-        <!-- القائمة المحمولة -->
-        <div class="mobile-menu" id="mobileMenu">
-            <div class="mobile-menu-content">
-                <a href="index.html" class="mobile-nav-link">الرئيسية</a>
-                <a href="record.html" class="mobile-nav-link">التسجيل</a>
-                <a href="follow-up.html" class="mobile-nav-link active">المتابعة</a>
-                <a href="admin.html" class="mobile-nav-link">المراجعة</a>
-            </div>
-        </div>
-
-        <!-- المحتوى الرئيسي -->
-        <main class="main-content">
-            <div class="follow-container">
-                <div class="page-header">
-                    <h1 class="page-title">📊 متابعة التسجيلات</h1>
-                    <p class="page-description">تابع حالة تسجيلاتك الصوتية ومعرفة ما إذا تم قبولها أو رفضها</p>
-                </div>
-
-                <!-- خيارات التصفية -->
-                <div class="filter-section">
-                    <h2 class="section-title">🔍 خيارات البحث والتصفية</h2>
-                    
-                    <div class="filter-grid">
-                        <div class="filter-group">
-                            <label for="speakerFilter" class="filter-label">المتحدث</label>
-                            <select id="speakerFilter" class="filter-input">
-                                <option value="">جميع المتحدثين</option>
-                            </select>
-                        </div>
-                        
-                        <div class="filter-group">
-                            <label for="statusFilter" class="filter-label">الحالة</label>
-                            <select id="statusFilter" class="filter-input">
-                                <option value="">جميع الحالات</option>
-                                <option value="pending">قيد المراجعة ⏳</option>
-                                <option value="approved">تم القبول ✅</option>
-                                <option value="rejected">تم الرفض ❌</option>
-                            </select>
-                        </div>
-                        
-                        <div class="filter-actions">
-                            <button id="applyFilterBtn" class="btn btn-primary">تطبيق التصفية</button>
-                            <button id="clearFilterBtn" class="btn btn-secondary">مسح الفلتر</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ملخص الإحصائيات -->
-                <div class="stats-overview">
-                    <h2 class="section-title">📈 ملخص إحصائياتك</h2>
-                    
-                    <div class="stats-cards">
-                        <div class="stat-card">
-                            <div class="stat-icon">🎤</div>
-                            <div class="stat-info">
-                                <div class="stat-number" id="totalUserRecordings">0</div>
-                                <div class="stat-label">إجمالي التسجيلات</div>
-                            </div>
-                        </div>
-                        
-                        <div class="stat-card approved">
-                            <div class="stat-icon">✅</div>
-                            <div class="stat-info">
-                                <div class="stat-number" id="approvedUserRecordings">0</div>
-                                <div class="stat-label">تم القبول</div>
-                            </div>
-                        </div>
-                        
-                        <div class="stat-card pending">
-                            <div class="stat-icon">⏳</div>
-                            <div class="stat-info">
-                                <div class="stat-number" id="pendingUserRecordings">0</div>
-                                <div class="stat-label">قيد المراجعة</div>
-                            </div>
-                        </div>
-                        
-                        <div class="stat-card rejected">
-                            <div class="stat-icon">❌</div>
-                            <div class="stat-info">
-                                <div class="stat-number" id="rejectedUserRecordings">0</div>
-                                <div class="stat-label">تم الرفض</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- قائمة التسجيلات -->
-                <div class="recordings-section">
-                    <div class="section-header">
-                        <h2 class="section-title">🎵 تسجيلاتك</h2>
-                        <a href="record.html" class="btn btn-primary">➕ تسجيل جديد</a>
-                    </div>
-                    
-                    <div id="recordingsContainer" class="recordings-grid">
-                        <div class="loading-message">
-                            <div class="loading"></div>
-                            <p>جاري تحميل التسجيلات...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- تذييل الصفحة -->
-        <footer class="footer">
-            <div class="container">
-                <div class="footer-bottom">
-                    <p>تم الإنشاء بواسطة محمد بابكر © 2024</p>
-                </div>
-            </div>
-        </footer>
-    </div>
-
-    <!-- نافذة تشغيل الصوت -->
-    <div class="modal" id="audioModal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>🎧 تشغيل التسجيل</h2>
-                <button type="button" class="close-btn" id="closeAudioModal">&times;</button>
-            </div>
-            
-            <div class="audio-player-container">
-                <audio id="modalAudioPlayer" controls></audio>
-                <div class="audio-info" id="audioInfo">
-                    <!-- معلومات التسجيل -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- الإشعارات -->
-    <div class="notification-container" id="notificationContainer"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
-    <script src="follow-up.js"></script>
-</body>
-</html>
