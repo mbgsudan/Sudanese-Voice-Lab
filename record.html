@@ -1,226 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صفحة التسجيل - منصة صوتنا</title>
-    <meta name="description" content="سجل صوتك لمساعدة في تطوير تقنيات الذكاء الاصطناعي باللغة العربية السودانية">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="record.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&family=Tajawal:wght@200;300;400;500;700;900&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="app-container">
-        <!-- شريط التنقل العلوي -->
-        <header class="navbar">
-            <div class="nav-container">
-                <div class="nav-brand">
-                    <img src="logo.png" alt="شعار منصة صوتنا" class="logo" onerror="this.style.display='none'">
-                    <span class="brand-text">منصة صوتنا</span>
-                </div>
-                <nav class="nav-menu">
-                    <a href="index.html" class="nav-link">الرئيسية</a>
-                    <a href="record.html" class="nav-link active">التسجيل</a>
-                    <a href="follow-up.html" class="nav-link">المتابعة</a>
-                    <a href="admin.html" class="nav-link">المراجعة</a>
-                </nav>
-                <button class="mobile-menu-btn" id="mobileMenuBtn">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </header>
-
-        <!-- القائمة المحمولة -->
-        <div class="mobile-menu" id="mobileMenu">
-            <div class="mobile-menu-content">
-                <a href="index.html" class="mobile-nav-link">الرئيسية</a>
-                <a href="record.html" class="mobile-nav-link active">التسجيل</a>
-                <a href="follow-up.html" class="mobile-nav-link">المتابعة</a>
-                <a href="admin.html" class="mobile-nav-link">المراجعة</a>
-            </div>
-        </div>
-
-        <!-- المحتوى الرئيسي -->
-        <main class="main-content">
-            <div class="record-container">
-                <div class="record-header">
-                    <h1 class="page-title">📼 تسجيل صوتي جديد</h1>
-                    <p class="page-description">ساهم في تطوير الذكاء الاصطناعي العربي بتسجيل صوتك</p>
-                </div>
-
-                <!-- نموذج التسجيل -->
-                <form id="recordingForm" class="recording-form">
-                    <!-- اختيار المتحدث -->
-                    <div class="form-section">
-                        <h2 class="section-title">👤 معلومات المتحدث</h2>
-                        <div class="form-group">
-                            <label for="speakerSelect" class="form-label">اختر اسمك من القائمة</label>
-                            <select id="speakerSelect" class="form-input" required>
-                                <option value="">اختر المتحدث...</option>
-                            </select>
-                            <div class="form-help">إذا لم تجد اسمك، يمكنك إضافة متحدث جديد</div>
-                        </div>
-                        
-                        <button type="button" id="addSpeakerBtn" class="btn btn-secondary">
-                            ➕ إضافة متحدث جديد
-                        </button>
-                    </div>
-
-                    <!-- النص المطلوب قراءته -->
-                    <div class="form-section">
-                        <h2 class="section-title">📝 النص المطلوب قراءته</h2>
-                        <div class="text-display" id="textDisplay">
-                            <div class="text-content" id="textContent">
-                                جاري تحميل النص...
-                            </div>
-                            <div class="text-actions">
-                                <button type="button" id="newTextBtn" class="btn btn-outline">
-                                    🔄 نص جديد
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- واجهة التسجيل -->
-                    <div class="form-section">
-                        <h2 class="section-title">🎤 واجهة التسجيل</h2>
-                        
-                        <div class="recording-interface">
-                            <!-- أزرار التحكم -->
-                            <div class="recording-controls">
-                                <button type="button" id="recordBtn" class="record-btn">
-                                    <span class="record-icon">🎤</span>
-                                    <span class="record-text">بدء التسجيل</span>
-                                </button>
-                                
-                                <div class="timer-display">
-                                    <span class="timer" id="timer">00:00</span>
-                                </div>
-                            </div>
-
-                            <!-- مؤشر الصوت المرئي -->
-                            <div class="audio-visualizer" id="audioVisualizer">
-                                <div class="visualizer-bars" id="visualizerBars">
-                                    <!-- سيتم إنشاء الأعمدة بواسطة JavaScript -->
-                                </div>
-                                <div class="visualizer-message">ابدأ التسجيل لرؤية الموجات الصوتية</div>
-                            </div>
-
-                            <!-- مشغل الصوت للمراجعة -->
-                            <div class="audio-review" id="audioReview" style="display: none;">
-                                <h3>🎧 مراجعة التسجيل</h3>
-                                <div class="audio-player">
-                                    <audio id="audioPlayer" controls></audio>
-                                </div>
-                                <div class="review-actions">
-                                    <button type="button" id="reRecordBtn" class="btn btn-secondary">
-                                        🔄 إعادة تسجيل
-                                    </button>
-                                    <button type="submit" id="submitBtn" class="btn btn-primary">
-                                        ✅ إرسال التسجيل
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-
-                <!-- حالة الإرسال -->
-                <div class="submission-status" id="submissionStatus" style="display: none;">
-                    <div class="status-content">
-                        <div class="status-icon">✅</div>
-                        <h3>تم إرسال التسجيل بنجاح!</h3>
-                        <p>شكراً لك على مساهمتك في تطوير الذكاء الاصطناعي العربي</p>
-                        <button type="button" id="newRecordingBtn" class="btn btn-primary">
-                            🎤 تسجيل جديد
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- نافذة إضافة متحدث جديد -->
-        <div class="modal" id="addSpeakerModal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>👤 إضافة متحدث جديد</h2>
-                    <button type="button" class="close-btn" id="closeSpeakerModal">&times;</button>
-                </div>
-                
-                <form id="addSpeakerForm">
-                    <div class="form-group">
-                        <label for="speakerName" class="form-label">الاسم الكامل</label>
-                        <input type="text" id="speakerName" class="form-input" required 
-                               placeholder="أدخل اسمك الكامل">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="speakerGender" class="form-label">الجنس</label>
-                        <select id="speakerGender" class="form-input" required>
-                            <option value="">اختر الجنس</option>
-                            <option value="male">ذكر</option>
-                            <option value="female">أنثى</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="speakerAge" class="form-label">العمر</label>
-                        <select id="speakerAge" class="form-input" required>
-                            <option value="">اختر الفئة العمرية</option>
-                            <option value="18-25">18-25 سنة</option>
-                            <option value="26-35">26-35 سنة</option>
-                            <option value="36-45">36-45 سنة</option>
-                            <option value="46-55">46-55 سنة</option>
-                            <option value="56+">أكثر من 56 سنة</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="speakerDialect" class="form-label">اللهجة</label>
-                        <select id="speakerDialect" class="form-input" required>
-                            <option value="">اختر اللهجة</option>
-                            <option value="khartoum">خرطوم</option>
-                            <option value="gezira">الجزيرة</option>
-                            <option value="kassala">كسلا</option>
-                            <option value="darfur">دارفور</option>
-                            <option value="kordofan">كردفان</option>
-                            <option value="white_nile">النيل الأبيض</option>
-                            <option value="blue_nile">النيل الأزرق</option>
-                            <option value="northern">الشمالية</option>
-                            <option value="red_sea">البحر الأحمر</option>
-                            <option value="other">أخرى</option>
-                        </select>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary" id="cancelSpeakerBtn">إلغاء</button>
-                        <button type="submit" class="btn btn-primary">حفظ المتحدث</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- تذييل الصفحة -->
-        <footer class="footer">
-            <div class="container">
-                <div class="footer-bottom">
-                    <p>تم الإنشاء بواسطة محمد بابكر © 2024</p>
-                </div>
-            </div>
-        </footer>
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
-<script src="config.js"></script>
-<script src="script.js"></script>
-<script src="record.js"></script>
-    </div>
-
-    <!-- الإشعارات -->
-    <div class="notification-container" id="notificationContainer"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
-    <script src="record.js"></script>
-</body>
-</html>
