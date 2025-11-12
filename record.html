@@ -1,135 +1,0 @@
-
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="generator" content="Hostinger Horizons" />
-  <title>تسجيل صوت - منصة صوتنا</title>
-  <meta name="description" content="سجل صوتك باللهجة السودانية وساهم في بناء قاعدة بيانات لغوية متقدمة" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css" />
-</head>
-<body>
-  <header class="navbar">
-    <div class="container navbar-content">
-      <a href="/index.html" class="logo-container">
-        <img src="https://horizons-cdn.hostinger.com/9da7c9d8-85bf-4849-ab07-0f20888889e7/7311108cbd285b44497dcd51844265b5.png" alt="شعار صوتنا" class="navbar-logo" />
-      </a>
-      <a href="/index.html" class="back-button-nav">العودة للرئيسية</a>
-    </div>
-  </header>
-  
-  <div class="container">
-    <main class="recording-page">
-      <div id="countdown-overlay" class="countdown-overlay" style="display: none;">
-        <div id="countdown-timer" class="countdown-timer">3</div>
-      </div>
-
-      <div class="speaker-stats glass-card" id="speaker-stats" style="display: none;">
-        <div class="stat">
-          <span class="stat-label">اللهجة:</span>
-          <span id="speaker-accent" class="stat-value">...</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">الإجمالي:</span>
-          <span id="total-recordings" class="stat-value">0</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">مقبول ✅:</span>
-          <span id="approved-recordings" class="stat-value green">0</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">مرفوض ❌:</span>
-          <span id="rejected-recordings" class="stat-value red">0</span>
-        </div>
-      </div>
-      
-      <div class="glass-card">
-        <div class="accent-speaker-grid">
-          <div class="form-group">
-            <label for="accent-select">اختر اللهجة:</label>
-            <select id="accent-select" class="input-field">
-              <option value="">كل اللهجات</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="speaker-select">اختر المتحدث:</label>
-            <select id="speaker-select" class="input-field">
-              <option value="">اختر لهجة أولاً</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="mic-type">نوع الميكروفون:</label>
-          <select id="mic-type" class="input-field">
-            <option value="USB">USB</option>
-            <option value="هاتف">هاتف</option>
-          </select>
-        </div>
-
-        <div class="text-display glass-card">
-          <h3>النص المطلوب قراءته:</h3>
-          <p id="current-text" class="text-content">جاري تحميل النص...</p>
-        </div>
-
-        <div class="waveform-container" id="waveform">
-          <canvas id="waveform-canvas"></canvas>
-        </div>
-
-        <div id="audio-preview" style="display: none; margin-top: 20px;">
-          <h4>معاينة التسجيل (<span id="recording-duration">0s</span>)</h4>
-          <audio id="audio-player" controls style="width: 100%; margin-top: 10px;"></audio>
-        </div>
-
-        <div class="recording-controls">
-          <button id="record-btn" class="neon-button green large">
-            <span class="icon">🎙️</span>
-            <span class="text">ابدأ التسجيل</span>
-          </button>
-          
-          <button id="stop-btn" class="neon-button red large" style="display: none;">
-            <span class="icon">⏹️</span>
-            <span class="text">إيقاف التسجيل</span>
-          </button>
-
-          <div id="post-recording-actions" style="display: none; width: 100%;">
-            <button id="submit-btn" class="neon-button blue large">
-              <span class="icon">✅</span>
-              <span class="text">إرسال التسجيل</span>
-            </button>
-            <button id="rerecord-btn" class="neon-button yellow large" style="margin-top: 15px;">
-              <span class="icon">🔄</span>
-              <span class="text">إعادة التسجيل</span>
-            </button>
-          </div>
-          
-          <button id="next-btn" class="neon-button purple large" style="display: none;">
-            <span class="icon">➡️</span>
-            <span class="text">النص التالي</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="tips-section glass-card">
-        <h3>💡 نصائح لتسجيل جيد</h3>
-        <ul class="tips-list">
-          <li><span class="tip-icon">🤫</span> تأكد من عدم وجود ضوضاء في الخلفية.</li>
-          <li><span class="tip-icon">🗣️</span> تحدث بوضوح وببطء معتدل.</li>
-          <li><span class="tip-icon">📱</span> إذا كنت تسجل من الهاتف، قرّب الهاتف من فمك.</li>
-          <li><span class="tip-icon">🎤</span> استخدم ميكروفون عالي الجودة إن أمكن.</li>
-          <li><span class="tip-icon">🐢</span> تجنب التحدث بسرعة كبيرة.</li>
-          <li><span class="tip-icon">🔋</span> تأكد من شحن الهاتف أو الجهاز.</li>
-          <li><span class="tip-icon">🎧</span> اختبر الصوت قبل التسجيل الفعلي.</li>
-        </ul>
-      </div>
-    </main>
-  </div>
-
-  <div id="toast-container"></div>
-  <script type="module" src="/src/record.js"></script>
-</body>
-</html>
