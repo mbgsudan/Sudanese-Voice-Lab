@@ -1,200 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة صوتنا - لجمع التسجيلات الصوتية السودانية</title>
-    <meta name="description" content="منصة صوتنا لجمع التسجيلات الصوتية السودانية لتدريب نماذج الذكاء الاصطناعي">
-    <meta name="keywords" content="صوتنا، تسجيلات صوتية، ذكاء اصطناعي، السودان، عربي">
-    <meta name="author" content="محمد بابكر">
-    
-    <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="منصة صوتنا - أصوات السودان تصنع مستقبل الذكاء الاصطناعي">
-    <meta property="og:description" content="شارك صوتك لتطوير تقنيات الذكاء الاصطناعي باللغة العربية السودانية">
-    <meta property="og:type" content="website">
-    <meta property="og:locale" content="ar_SA">
-    
-    <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&family=Tajawal:wght@200;300;400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-    <div class="app-container">
-        <!-- شريط التنقل العلوي -->
-        <header class="navbar">
-            <div class="nav-container">
-                <div class="nav-brand">
-                    <img src="logo.png" alt="شعار منصة صوتنا" class="logo" onerror="this.style.display='none'">
-                    <span class="brand-text">منصة صوتنا</span>
-                </div>
-                <nav class="nav-menu">
-                    <a href="index.html" class="nav-link active">الرئيسية</a>
-                    <a href="record.html" class="nav-link">التسجيل</a>
-                    <a href="follow-up.html" class="nav-link">المتابعة</a>
-                    <a href="admin.html" class="nav-link">المراجعة</a>
-                </nav>
-                <button class="mobile-menu-btn" id="mobileMenuBtn">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </header>
-
-        <!-- القائمة المحمولة -->
-        <div class="mobile-menu" id="mobileMenu">
-            <div class="mobile-menu-content">
-                <a href="index.html" class="mobile-nav-link active">الرئيسية</a>
-                <a href="record.html" class="mobile-nav-link">التسجيل</a>
-                <a href="follow-up.html" class="mobile-nav-link">المتابعة</a>
-                <a href="admin.html" class="mobile-nav-link">المراجعة</a>
-            </div>
-        </div>
-
-        <!-- المحتوى الرئيسي -->
-        <main class="main-content">
-            <!-- قسم البطل -->
-            <section class="hero-section">
-                <div class="hero-background">
-                    <img src="0dfc3b34-2283-4e1b-aa3a-ebd3e53b5d63.png" alt="خلفية منصة صوتنا" class="hero-bg-image" onerror="this.style.opacity='0'">
-                    <div class="hero-overlay"></div>
-                </div>
-                
-                <div class="hero-content">
-                    <div class="hero-logo">
-                        <img src="logo.png" alt="شعار منصة صوتنا" class="hero-logo-img" onerror="this.style.display='none'">
-                    </div>
-                    
-                    <h1 class="hero-title">منصة صوتنا</h1>
-                    <p class="hero-slogan">أصوات السودان تصنع مستقبل الذكاء الاصطناعي</p>
-                    
-                    <div class="hero-description">
-                        <p>شارك صوتك في بناء أول منصة ذكية للغة العربية السودانية</p>
-                        <p>ساهم في تطوير تقنيات الذكاء الاصطناعي بصوتك</p>
-                    </div>
-                    
-                    <div class="hero-actions">
-                        <a href="record.html" class="btn btn-primary btn-large">
-                            🎤 ابدأ التسجيل الآن
-                        </a>
-                        <a href="follow-up.html" class="btn btn-secondary btn-large">
-                            📊 تابع تسجيلاتك
-                        </a>
-                    </div>
-                </div>
-
-                <!-- موجات صوتية متحركة -->
-                <div class="sound-waves">
-                    <div class="wave wave-1"></div>
-                    <div class="wave wave-2"></div>
-                    <div class="wave wave-3"></div>
-                    <div class="wave wave-4"></div>
-                </div>
-            </section>
-
-            <!-- قسم المميزات -->
-            <section class="features-section">
-                <div class="container">
-                    <h2 class="section-title">لماذا منصة صوتنا؟</h2>
-                    
-                    <div class="features-grid">
-                        <div class="feature-card">
-                            <div class="feature-icon">🎯</div>
-                            <h3>هدف نبيل</h3>
-                            <p>نساهم في تطوير تقنيات الذكاء الاصطناعي للغة العربية السودانية</p>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <div class="feature-icon">🔒</div>
-                            <h3>أمان وخصوصية</h3>
-                            <p>تسجيلاتك محمية بأعلى معايير الأمان والخصوصية</p>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <div class="feature-icon">📱</div>
-                            <h3>سهل الاستخدام</h3>
-                            <p>واجهة بسيطة وسهلة للتسجيل من أي جهاز</p>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <div class="feature-icon">🌍</div>
-                            <h3>تنوع ثقافي</h3>
-                            <p>نجمع أصوات من جميع مناطق السودان ولهجاته</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- قسم الإحصائيات -->
-            <section class="stats-section">
-                <div class="container">
-                    <h2 class="section-title">إحصائياتنا</h2>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number" id="totalRecordings">0</div>
-                            <div class="stat-label">تسجيل صوتي</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <div class="stat-number" id="totalSpeakers">0</div>
-                            <div class="stat-label">متحدث مسجل</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <div class="stat-number" id="totalMinutes">0</div>
-                            <div class="stat-label">دقيقة تسجيل</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <div class="stat-number" id="totalDialects">0</div>
-                            <div class="stat-label">لهجة مختلفة</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- تذييل الصفحة -->
-        <footer class="footer">
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-brand">
-                        <img src="logo.png" alt="شعار منصة صوتنا" class="footer-logo" onerror="this.style.display='none'">
-                        <h3>منصة صوتنا</h3>
-                        <p>أصوات السودان تصنع مستقبل الذكاء الاصطناعي</p>
-                    </div>
-                    
-                    <div class="footer-links">
-                        <h4>روابط سريعة</h4>
-                        <a href="index.html">الرئيسية</a>
-                        <a href="record.html">التسجيل</a>
-                        <a href="follow-up.html">المتابعة</a>
-                        <a href="admin.html">المراجعة</a>
-                    </div>
-                    
-                    <div class="footer-info">
-                        <h4>معلومات المشروع</h4>
-                        <p>مشروع لجمع البيانات الصوتية</p>
-                        <p>لتطوير تقنيات الذكاء الاصطناعي</p>
-                        <p>للغة العربية السودانية</p>
-                    </div>
-                </div>
-                
-                <div class="footer-bottom">
-                    <p>تم الإنشاء بواسطة محمد بابكر © 2024</p>
-                </div>
-            </div>
-        </footer>
-    </div>
-
-    <!-- مؤثرات بصرية -->
-    <div class="particles" id="particles"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
-    <script src="home.js"></script>
-</body>
-</html>
